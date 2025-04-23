@@ -12,7 +12,7 @@ const AppRoutes = () => {
           {/* <Route path="/editor" element={<MemeEditor />} />
           <Route path="/gallery" element={<MemeGallery />} /> */}
           <Route path="/profile" element={<Profile />} />
-          <Route path='/all-meme' element={<AllMeme/>} />
+          <Route path='/all-memes' element={<AllMeme/>} />
         </Routes>
       </main>
     </div>

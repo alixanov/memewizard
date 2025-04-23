@@ -129,7 +129,7 @@ const Sidebar = () => {
     { name: 'Home', icon: <HomeIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/' },
     { name: 'Editor', icon: <EditIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/editor' },
     { name: 'Gallery', icon: <ImageIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/gallery' },
-    { name: 'All Meme', icon: <AutoAwesomeMotionIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/all-meme' },
+    { name: 'All Meme', icon: <AutoAwesomeMotionIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/all-memes' },
 
   ];
 
