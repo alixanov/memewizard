@@ -1,27 +1,158 @@
-import React from 'react'
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import DrawIcon from '@mui/icons-material/Draw';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import AutoGraphIcon from '@mui/icons-material/AutoGraph';
+import ImageIcon from '@mui/icons-material/Image';
+import CropIcon from '@mui/icons-material/Crop';
+import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
+
 const Home = () => {
+  const [hoveredCard, setHoveredCard] = useState(null);
+
+  const containerStyle = {
+    padding: '20px',
+    maxWidth: '1200px',
+    margin: '0 auto',
+  };
+
+  const featuresStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+    gap: '15px',
+    marginBottom: '40px',
+  };
+
+  const featureItemStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: '15px',
+    backgroundColor: '#ffffff',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s, border 0.3s',
+  };
+
+  const featureItemHoverStyle = {
+    ...featureItemStyle,
+    backgroundColor: '#f0f1f5',
+    border: '1px solid #080733',
+  };
+
+  const featureTextStyle = {
+    marginTop: '10px',
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#080733',
+    textAlign: 'center',
+  };
+
+  const myMemsStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '15px',
+    backgroundColor: '#ffffff',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    marginBottom: '40px',
+  };
+
+  const myMemsLinkStyle = {
+    fontSize: '16px',
+    fontWeight: '700',
+    color: '#080733',
+    textDecoration: 'none',
+  };
+
+  const allLinkStyle = {
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#555',
+    textDecoration: 'none',
+    padding: '8px 16px',
+    borderRadius: '4px',
+    transition: 'background-color 0.3s',
+  };
+
+  const allLinkHoverStyle = {
+    ...allLinkStyle,
+    backgroundColor: '#f0f1f5',
+  };
+
+  const cardMemsStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '20px',
+  };
+
+  const cardStyle = {
+    backgroundColor: '#ffffff',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    overflow: 'hidden',
+    height: '200px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: '#555',
+    fontSize: '14px',
+  };
+
+  const features = [
+    { name: 'Сделать мем', icon: <DrawIcon style={{ color: '#080733', fontSize: '24px' }} />, link: '/editor' },
+    { name: 'Сделать GIF файл', icon: <AddCircleOutlineIcon style={{ color: '#080733', fontSize: '24px' }} />, link: '/editor' },
+    { name: 'Мем ИИ', icon: <AutoGraphIcon style={{ color: '#080733', fontSize: '24px' }} />, link: '/editor' },
+    { name: 'Диаграмма', icon: <ImageIcon style={{ color: '#080733', fontSize: '24px' }} />, link: '/editor' },
+    { name: 'Изменить размер', icon: <CropIcon style={{ color: '#080733', fontSize: '24px' }} />, link: '/editor' },
+    { name: 'Демотиватор', icon: <SentimentDissatisfiedIcon style={{ color: '#080733', fontSize: '24px' }} />, link: '/editor' },
+  ];
+
   return (
-    <div>
-      {/* эти должны отобража более аккуратноф */}
-      <p>Сделат мем</p>
-      <p>Сделат GIF файл</p>
-      <p>Мем ИИ </p>
-      <p>Диаграмма</p>
-      <p>Изменит размер</p>
-      <p>Демотиватор</p>
-      <div className="my__mems">
-        <p>Мои творения</p>
-        <p>Все</p>
-        {/* при нажатия окрыт личный кабинет чтобы там отображат сохраненый мемы шаблоны  изображения ползователя потоки и так дале/ */}
+    <div style={containerStyle}>
+      {/* Список функций */}
+      <div style={featuresStyle}>
+        {features.map((feature, index) => (
+          <Link
+            key={index}
+            to={feature.link}
+            style={hoveredCard === index ? featureItemHoverStyle : featureItemStyle}
+            onMouseEnter={() => setHoveredCard(index)}
+            onMouseLeave={() => setHoveredCard(null)}
+          >
+            {feature.icon}
+            <span style={featureTextStyle}>{feature.name}</span>
+          </Link>
+        ))}
       </div>
-      <div className="card__mems">
-        {/* здес должно быт картинки то есть мемы */}
+
+      {/* Мои творения */}
+      <div style={myMemsStyle}>
+        <Link to="/profile" style={myMemsLinkStyle}>
+          Мои творения
+        </Link>
+        <Link
+          to="/gallery"
+          style={hoveredCard === 'all' ? allLinkHoverStyle : allLinkStyle}
+          onMouseEnter={() => setHoveredCard('all')}
+          onMouseLeave={() => setHoveredCard(null)}
+        >
+          Все
+        </Link>
+      </div>
+
+      {/* Галерея мемов */}
+      <div style={cardMemsStyle}>
+        {[1, 2, 3, 4].map((_, index) => (
+          <div key={index} style={cardStyle}>
+            Мем {index + 1} (заглушка)
+          </div>
+        ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { Sidebar, Home, MemeEditor, MemeGallery } from '../components';
+import { Sidebar, Home, MemeEditor, MemeGallery, Profile } from '../components';
 
 const AppRoutes = () => {
   return (
@@ -11,6 +11,7 @@ const AppRoutes = () => {
           <Route path="/" element={<Home />} />
           {/* <Route path="/editor" element={<MemeEditor />} />
           <Route path="/gallery" element={<MemeGallery />} /> */}
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </main>
     </div>
