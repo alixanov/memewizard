@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import memeData from '../data/memeData';
 
 const AllMeme = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+
   const containerStyle = {
     padding: '20px',
     maxWidth: '1200px',
@@ -44,13 +46,33 @@ const AllMeme = () => {
     return acc;
   }, {});
 
+  // Фильтруем мемы по поисковому запросу
+  const filteredMemes = Object.keys(groupedMemes).reduce((acc, category) => {
+    const filtered = groupedMemes[category].filter(meme =>
+      meme.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    if (filtered.length > 0) {
+      acc[category] = filtered;
+    }
+    return acc;
+  }, {});
+
   return (
     <div style={containerStyle}>
-      {Object.keys(groupedMemes).map((category, index) => (
+      {/* Поле ввода для поиска */}
+      <input
+        type="text"
+        placeholder="Поиск мемов..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        style={{ padding: '10px', width: '100%', marginBottom: '20px', fontSize: '16px',borderRadius:8 }}
+      />
+
+      {Object.keys(filteredMemes).map((category, index) => (
         <div key={index}>
           <div style={categoryStyle}>{category}</div>
           <div style={cardMemsStyle}>
-            {groupedMemes[category].map((meme, idx) => (
+            {filteredMemes[category].map((meme, idx) => (
               <img key={idx} src={meme.url} alt={meme.category} style={cardStyle} loading="lazy" />
             ))}
           </div>
