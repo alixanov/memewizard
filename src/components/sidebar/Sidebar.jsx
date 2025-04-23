@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest';
+import HomeIcon from '@mui/icons-material/Home';
+import EditIcon from '@mui/icons-material/Edit';
+import ImageIcon from '@mui/icons-material/Image';
 
 const Sidebar = () => {
   const [isMobile, setIsMobile] = useState(window.matchMedia('(max-width: 768px)').matches);
@@ -67,6 +70,8 @@ const Sidebar = () => {
       display: 'flex',
       flexDirection: 'row',
       gap: '15px',
+      flex: 1,
+      justifyContent: 'flex-end',
     }
     : {
       display: 'flex',
@@ -74,68 +79,81 @@ const Sidebar = () => {
       gap: '15px',
     };
 
-  const linkStyle = {
-    color: '#555',
-    fontSize: isMobile ? '14px' : '16px',
-    fontWeight: '500',
-    padding: isMobile ? '8px' : '10px',
-    borderRadius: '4px',
-    transition: 'background-color 0.3s, color 0.3s',
-    display: 'block',
-  };
+  const linkStyle = isMobile
+    ? {
+      padding: '8px',
+      borderRadius: '4px',
+      transition: 'background-color 0.3s, color 0.3s',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }
+    : {
+      color: '#555',
+      fontSize: '16px',
+      fontWeight: '500',
+      padding: '10px',
+      borderRadius: '4px',
+      transition: 'background-color 0.3s, color 0.3s',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+    };
 
-  const activeLinkStyle = {
-    ...linkStyle,
-    color: '#080733',
-    backgroundColor: '#e6e8f0',
-  };
+  const activeLinkStyle = isMobile
+    ? {
+      ...linkStyle,
+      backgroundColor: '#e6e8f0',
+    }
+    : {
+      ...linkStyle,
+      color: '#080733',
+      backgroundColor: '#e6e8f0',
+    };
 
-  const hoverLinkStyle = {
-    ...linkStyle,
-    color: '#080733',
-    backgroundColor: '#f0f1f5',
-  };
+  const hoverLinkStyle = isMobile
+    ? {
+      ...linkStyle,
+      backgroundColor: '#f0f1f5',
+    }
+    : {
+      ...linkStyle,
+      color: '#080733',
+      backgroundColor: '#f0f1f5',
+    };
 
   const getLinkStyle = (isActive, linkName) =>
     isActive ? activeLinkStyle : hoveredLink === linkName ? hoverLinkStyle : linkStyle;
 
+  const links = [
+    { name: 'Home', icon: <HomeIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/' },
+    { name: 'Editor', icon: <EditIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/editor' },
+    { name: 'Gallery', icon: <ImageIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/gallery' },
+  ];
+
+
+
+  
   return (
     <nav style={sidebarStyle}>
       <div style={logoStyle}>
         <SettingsSuggestIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />
-        MemeWizard
+        {isMobile ? '' : 'MemeWizard'}
       </div>
       <ul style={navLinksStyle}>
-        <li>
-          <NavLink
-            to="/"
-            style={({ isActive }) => getLinkStyle(isActive, 'home')}
-            onMouseEnter={() => !isMobile && setHoveredLink('home')}
-            onMouseLeave={() => !isMobile && setHoveredLink(null)}
-          >
-            Home
-          </NavLink>
-        </li>
-        <li>
-          <NavLink
-            to="/editor"
-            style={({ isActive }) => getLinkStyle(isActive, 'editor')}
-            onMouseEnter={() => !isMobile && setHoveredLink('editor')}
-            onMouseLeave={() => !isMobile && setHoveredLink(null)}
-          >
-            Editor
-          </NavLink>
-        </li>
-        <li>
-          <NavLink
-            to="/gallery"
-            style={({ isActive }) => getLinkStyle(isActive, 'gallery')}
-            onMouseEnter={() => !isMobile && setHoveredLink('gallery')}
-            onMouseLeave={() => !isMobile && setHoveredLink(null)}
-          >
-            Gallery
-          </NavLink>
-        </li>
+        {links.map((link) => (
+          <li key={link.name}>
+            <NavLink
+              to={link.to}
+              style={({ isActive }) => getLinkStyle(isActive, link.name.toLowerCase())}
+              onMouseEnter={() => !isMobile && setHoveredLink(link.name.toLowerCase())}
+              onMouseLeave={() => !isMobile && setHoveredLink(null)}
+            >
+              {link.icon}
+              {!isMobile && <span>{link.name}</span>}
+            </NavLink>
+          </li>
+        ))}
       </ul>
     </nav>
   );
