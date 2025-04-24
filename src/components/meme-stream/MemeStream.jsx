@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 import memeStreamsData from '../data/memeStreamsData';
 import SearchIcon from '@mui/icons-material/Search';
+import { useMediaQuery } from '@mui/material';
 
 const AllStreams = () => {
   const [hoveredCard, setHoveredCard] = useState(null);
   const [selectedStream, setSelectedStream] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
+  // Основные стили
   const containerStyle = {
-    padding: '20px',
+    padding: isMobile ? '10px' : '20px',
     maxWidth: '1200px',
     margin: '0 auto',
+    width: '100%',
+    boxSizing: 'border-box',
   };
 
   const headerStyle = {
@@ -20,10 +25,11 @@ const AllStreams = () => {
     marginBottom: '20px',
     flexWrap: 'wrap',
     gap: '10px',
+    width: '100%',
   };
 
   const titleStyle = {
-    fontSize: '20px',
+    fontSize: isMobile ? '18px' : '20px',
     fontWeight: '700',
     color: '#333',
     margin: 0,
@@ -36,8 +42,8 @@ const AllStreams = () => {
     borderRadius: '4px',
     border: '1px solid #ddd',
     padding: '8px 12px',
-    width: '300px',
-    maxWidth: '100%',
+    width: isMobile ? '100%' : '300px',
+    boxSizing: 'border-box',
   };
 
   const searchInputStyle = {
@@ -57,68 +63,72 @@ const AllStreams = () => {
     display: 'flex',
     flexDirection: 'column',
     gap: '15px',
+    width: '100%',
   };
 
   const cardStyle = {
     backgroundColor: '#ffffff',
-    borderRadius: '6px', // Reduced for consistency with Home.jsx
+    borderRadius: '6px',
     overflow: 'hidden',
-    padding: '10px',
+    padding: isMobile ? '8px' : '10px',
     width: '100%',
-    height: '70px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', // Subtle shadow like Home.jsx
-    border: '1px solid transparent', // Reserve space to prevent shifting
+    minHeight: isMobile ? '60px' : '70px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    border: '1px solid transparent',
     transition: 'background-color 0.3s, box-shadow 0.3s',
     cursor: 'pointer',
+    boxSizing: 'border-box',
   };
 
   const cardHoverStyle = {
     ...cardStyle,
     backgroundColor: '#f0f1f5',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)', // Shadow instead of border
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
   };
 
   const categoryStyle = {
-    fontSize: '16px',
+    fontSize: isMobile ? '14px' : '16px',
     fontWeight: '600',
     color: '#333',
-    marginBottom: '8px',
+    marginBottom: '4px',
   };
 
   const descriptionStyle = {
-    fontSize: '12px',
+    fontSize: isMobile ? '11px' : '12px',
     color: '#666',
-    marginBottom: '8px',
+    marginBottom: '4px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     display: '-webkit-box',
-    WebkitLineClamp: 3,
+    WebkitLineClamp: isMobile ? 2 : 3,
     WebkitBoxOrient: 'vertical',
+    lineHeight: '1.4',
   };
 
   const streamContentStyle = {
     backgroundColor: '#ffffff',
     borderRadius: '6px',
-    padding: '20px',
+    padding: isMobile ? '15px' : '20px',
     marginTop: '20px',
     display: 'flex',
     flexDirection: 'column',
     gap: '10px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', // Consistent shadow
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    width: '100%',
+    boxSizing: 'border-box',
   };
 
   const streamContentInnerStyle = {
     display: 'flex',
-    gap: '20px',
-    flexDirection: 'row',
-    '@media (max-width: 768px)': {
-      flexDirection: 'column',
-    },
+    gap: isMobile ? '10px' : '20px',
+    flexDirection: isMobile ? 'column' : 'row',
+    width: '100%',
   };
 
   const streamImageStyle = {
-    width: '300px',
-    height: '300px',
+    width: isMobile ? '100%' : '300px',
+    height: isMobile ? 'auto' : '300px',
+    maxHeight: isMobile ? '300px' : 'none',
     objectFit: 'cover',
     borderRadius: '4px',
     flexShrink: 0,
@@ -129,11 +139,13 @@ const AllStreams = () => {
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
+    width: '100%',
   };
 
   const streamCommentStyle = {
-    fontSize: '12px',
+    fontSize: isMobile ? '11px' : '12px',
     color: '#666',
+    lineHeight: '1.4',
   };
 
   const streamCommentUserStyle = {
@@ -151,16 +163,15 @@ const AllStreams = () => {
     cursor: 'pointer',
     alignSelf: 'flex-start',
     transition: 'background-color 0.3s',
+    marginTop: isMobile ? '10px' : '0',
   };
 
-  // Example comments in English
   const exampleComments = [
     { user: 'User1', text: 'This is a great meme!' },
     { user: 'User2', text: 'Cats always win!' },
     { user: 'User3', text: 'These GIFs are fire!' },
   ];
 
-  // Filter streams based on search query
   const filteredStreams = memeStreamsData.filter((stream) => {
     const query = searchQuery.toLowerCase();
     return (
@@ -192,8 +203,8 @@ const AllStreams = () => {
               <div
                 key={index}
                 style={hoveredCard === index ? cardHoverStyle : cardStyle}
-                onMouseEnter={() => setHoveredCard(index)}
-                onMouseLeave={() => setHoveredCard(null)}
+                onMouseEnter={() => !isMobile && setHoveredCard(index)}
+                onMouseLeave={() => !isMobile && setHoveredCard(null)}
                 onClick={() =>
                   setSelectedStream({
                     ...stream,
@@ -207,7 +218,7 @@ const AllStreams = () => {
               </div>
             ))
           ) : (
-            <div style={{ fontSize: '14px', color: '#666' }}>
+            <div style={{ fontSize: '14px', color: '#666', padding: '10px' }}>
               {searchQuery ? 'Nothing found' : 'No meme streams available'}
             </div>
           )}

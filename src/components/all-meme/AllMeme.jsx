@@ -60,7 +60,7 @@ const AllMeme = () => {
 
   const cardMemsStyle = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
     gap: '15px',
     marginBottom: '30px'
   };
@@ -71,20 +71,21 @@ const AllMeme = () => {
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
     overflow: 'hidden',
     width: '100%',
-    height: '100px',
+    height: '250px', // Increased height
     transition: 'transform 0.2s, box-shadow 0.2s',
     cursor: 'pointer',
     ':hover': {
       transform: 'translateY(-2px)',
-      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)'
-    }
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
+    },
   };
 
   const cardImageStyle = {
     width: '100%',
-    height: '100%',
+    height: '250px', // Increased height
     objectFit: 'cover',
   };
+
 
   const emptyStateStyle = {
     fontSize: '14px',
@@ -95,7 +96,7 @@ const AllMeme = () => {
     borderRadius: '8px'
   };
 
-  // Группируем мемы по категориям
+  // Group memes by categories
   const groupedMemes = memeData.reduce((acc, meme) => {
     if (!acc[meme.category]) {
       acc[meme.category] = [];
@@ -104,7 +105,7 @@ const AllMeme = () => {
     return acc;
   }, {});
 
-  // Фильтруем мемы по поисковому запросу (по категории и описанию если есть)
+  // Filter memes by search term (by category and description if available)
   const filteredMemes = Object.keys(groupedMemes).reduce((acc, category) => {
     const filtered = groupedMemes[category].filter(meme =>
       meme.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -119,12 +120,12 @@ const AllMeme = () => {
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
-        <h2 style={titleStyle}>Все мемы</h2>
+        <h2 style={titleStyle}>All Memes</h2>
         <div style={searchContainerStyle}>
           <SearchIcon style={searchIconStyle} />
           <input
             type="text"
-            placeholder="Поиск по категории или описанию..."
+            placeholder="Search by category or description..."
             style={searchInputStyle}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -152,7 +153,7 @@ const AllMeme = () => {
         ))
       ) : (
         <div style={emptyStateStyle}>
-          {searchTerm ? 'Ничего не найдено' : 'Нет доступных мемов'}
+          {searchTerm ? 'Nothing found' : 'No memes available'}
         </div>
       )}
     </div>
