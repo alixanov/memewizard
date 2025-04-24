@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ImageIcon from '@mui/icons-material/Image';
@@ -18,7 +18,7 @@ import { Profile } from "../../components/";
 
 const MemeGallery = () => {
   const [activeButton, setActiveButton] = useState(null);
-  const [activeMenuItem, setActiveMenuItem] = useState('welcome');
+  const [activeMenuItem, setActiveMenuItem] = useState('profile'); // Set profile as default
 
   const containerStyle = {
     display: 'flex',
@@ -138,23 +138,6 @@ const MemeGallery = () => {
 
   const renderContent = () => {
     switch (activeMenuItem) {
-      case 'welcome':
-        return (
-          <>
-            <h2 style={contentTitleStyle}>Добро пожаловать!</h2>
-            <p style={contentTextStyle}>У вас пока нет сохраненных изображений на вашем аккаунте.</p>
-            <p style={contentTextStyle}>Попробуйте создать их с помощью одного из генераторов в разделе «Создать»!</p>
-            <Link
-              to="/editor"
-              style={activeButton === 'create' ? createButtonHoverStyle : createButtonStyle}
-              onMouseEnter={() => setActiveButton('create')}
-              onMouseLeave={() => setActiveButton(null)}
-            >
-              <AddCircleOutlineIcon style={{ fontSize: '20px', color: '#080733' }} />
-              Создать сейчас
-            </Link>
-          </>
-        );
       case 'profile':
         return <Profile />;
       case 'images':
@@ -242,7 +225,7 @@ const MemeGallery = () => {
           </>
         );
       default:
-        return null;
+        return <Profile />;
     }
   };
 
@@ -274,7 +257,9 @@ const MemeGallery = () => {
       </div>
 
       {/* Основное содержимое */}
-      <div style={contentStyle}>{renderContent()}</div>
+      <div style={contentStyle}>
+        {renderContent()}
+      </div>
     </div>
   );
 };

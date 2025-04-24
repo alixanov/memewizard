@@ -6,6 +6,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import ImageIcon from '@mui/icons-material/Image';
 import AutoAwesomeMotionIcon from '@mui/icons-material/AutoAwesomeMotion';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import GroupsIcon from '@mui/icons-material/Groups';
 
 
 const Sidebar = () => {
@@ -28,7 +29,7 @@ const Sidebar = () => {
       alignItems: 'center',
       width: '100%',
       padding: '10px 20px',
-      backgroundColor: '#ffffff',
+      backgroundColor: '#e6e8f0', // Updated background color
       boxShadow: '0 -2px 4px rgba(0, 0, 0, 0.1)',
       position: 'fixed',
       bottom: 0,
@@ -41,7 +42,7 @@ const Sidebar = () => {
       width: '250px',
       height: '100vh',
       padding: '20px',
-      backgroundColor: '#ffffff',
+      backgroundColor: '#e6e8f0', // Updated background color
       boxShadow: '2px 0 4px rgba(0, 0, 0, 0.1)',
       position: 'fixed',
       top: 0,
@@ -85,7 +86,7 @@ const Sidebar = () => {
   const linkStyle = isMobile
     ? {
       padding: '8px',
-      borderRadius: '4px',
+      borderRadius: '8px',
       transition: 'background-color 0.3s, color 0.3s',
       display: 'flex',
       alignItems: 'center',
@@ -96,7 +97,7 @@ const Sidebar = () => {
       fontSize: '16px',
       fontWeight: '500',
       padding: '10px',
-      borderRadius: '4px',
+      borderRadius: '8px',
       transition: 'background-color 0.3s, color 0.3s',
       display: 'flex',
       alignItems: 'center',
@@ -106,12 +107,12 @@ const Sidebar = () => {
   const activeLinkStyle = isMobile
     ? {
       ...linkStyle,
-      backgroundColor: '#e6e8f0',
+      backgroundColor: '#ffffff', // More minimal active color
     }
     : {
       ...linkStyle,
       color: '#080733',
-      backgroundColor: '#e6e8f0',
+      backgroundColor: '#ffffff', // More minimal active color
     };
 
   const hoverLinkStyle = isMobile
@@ -133,8 +134,10 @@ const Sidebar = () => {
     { name: 'Profile', icon: <AccountCircleIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/gallery' },
     { name: 'Editor', icon: <EditIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/editor' },
     { name: 'All Meme', icon: <AutoAwesomeMotionIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/all-memes' },
+    {
+      name: 'All Streams', icon: <GroupsIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/all-streams'
+    },
   ];
-
 
   return (
     <nav style={sidebarStyle}>
