@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { Sidebar, Home, MemeEditor, Profile, AllMeme ,MemeGallery} from '../components';
+import { Sidebar, Home, MemeEditor, Profile, AllMeme, MemeGallery } from '../components';
 
 const AppRoutes = () => {
   return (
@@ -12,7 +12,7 @@ const AppRoutes = () => {
           {/* <Route path="/editor" element={<MemeEditor />} /> */}
           <Route path="/gallery" element={<MemeGallery />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path='/all-memes' element={<AllMeme/>} />
+          <Route path="/all-memes" element={<AllMeme />} />
         </Routes>
       </main>
     </div>

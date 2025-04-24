@@ -5,6 +5,9 @@ import HomeIcon from '@mui/icons-material/Home';
 import EditIcon from '@mui/icons-material/Edit';
 import ImageIcon from '@mui/icons-material/Image';
 import AutoAwesomeMotionIcon from '@mui/icons-material/AutoAwesomeMotion';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+
+
 const Sidebar = () => {
   const [isMobile, setIsMobile] = useState(window.matchMedia('(max-width: 768px)').matches);
   const [hoveredLink, setHoveredLink] = useState(null);
@@ -127,13 +130,10 @@ const Sidebar = () => {
 
   const links = [
     { name: 'Home', icon: <HomeIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/' },
+    { name: 'Profile', icon: <AccountCircleIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/gallery' },
     { name: 'Editor', icon: <EditIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/editor' },
-    { name: 'Gallery', icon: <ImageIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/gallery' },
     { name: 'All Meme', icon: <AutoAwesomeMotionIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/all-memes' },
-
   ];
-
-
 
 
   return (

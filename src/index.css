@@ -31,7 +31,7 @@ body {
 
 .main-content {
   flex: 1;
-  padding: 20px;
+  /* padding: 20px; */
   margin-left: 250px;
   /* Учитываем ширину Sidebar в десктопе */
 }
