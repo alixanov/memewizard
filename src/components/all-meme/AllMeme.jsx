@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import memeData from '../data/memeData';
+import SearchIcon from '@mui/icons-material/Search';
 
 const AllMeme = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -10,31 +11,88 @@ const AllMeme = () => {
     margin: '0 auto',
   };
 
+  const headerStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '20px',
+    flexWrap: 'wrap',
+    gap: '10px'
+  };
+
+  const titleStyle = {
+    fontSize: '20px',
+    fontWeight: '700',
+    color: '#333',
+    margin: 0,
+  };
+
+  const searchContainerStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: '8px',
+    border: '1px solid #ddd',
+    padding: '8px 12px',
+    width: '300px',
+    maxWidth: '100%'
+  };
+
+  const searchInputStyle = {
+    border: 'none',
+    outline: 'none',
+    width: '100%',
+    fontSize: '14px',
+    marginLeft: '8px'
+  };
+
+  const searchIconStyle = {
+    color: '#666',
+    fontSize: '20px'
+  };
+
   const categoryStyle = {
     fontSize: '18px',
     fontWeight: 'bold',
     margin: '20px 0 10px',
+    color: '#080733'
   };
 
   const cardMemsStyle = {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '10px',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+    gap: '15px',
+    marginBottom: '30px'
   };
 
   const cardStyle = {
     backgroundColor: '#ffffff',
-    borderRadius: '4px',
-    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
     overflow: 'hidden',
-    width: '100px',
+    width: '100%',
     height: '100px',
+    transition: 'transform 0.2s, box-shadow 0.2s',
+    cursor: 'pointer',
+    ':hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)'
+    }
   };
 
   const cardImageStyle = {
     width: '100%',
     height: '100%',
     objectFit: 'cover',
+  };
+
+  const emptyStateStyle = {
+    fontSize: '14px',
+    color: '#666',
+    textAlign: 'center',
+    padding: '20px',
+    backgroundColor: '#f8f9fa',
+    borderRadius: '8px'
   };
 
   // Группируем мемы по категориям
@@ -46,10 +104,11 @@ const AllMeme = () => {
     return acc;
   }, {});
 
-  // Фильтруем мемы по поисковому запросу
+  // Фильтруем мемы по поисковому запросу (по категории и описанию если есть)
   const filteredMemes = Object.keys(groupedMemes).reduce((acc, category) => {
     const filtered = groupedMemes[category].filter(meme =>
-      meme.category.toLowerCase().includes(searchTerm.toLowerCase())
+      meme.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (meme.description && meme.description.toLowerCase().includes(searchTerm.toLowerCase()))
     );
     if (filtered.length > 0) {
       acc[category] = filtered;
@@ -59,25 +118,43 @@ const AllMeme = () => {
 
   return (
     <div style={containerStyle}>
-      {/* Поле ввода для поиска */}
-      <input
-        type="text"
-        placeholder="Поиск мемов..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        style={{ padding: '10px', width: '100%', marginBottom: '20px', fontSize: '16px',borderRadius:8 }}
-      />
-
-      {Object.keys(filteredMemes).map((category, index) => (
-        <div key={index}>
-          <div style={categoryStyle}>{category}</div>
-          <div style={cardMemsStyle}>
-            {filteredMemes[category].map((meme, idx) => (
-              <img key={idx} src={meme.url} alt={meme.category} style={cardStyle} loading="lazy" />
-            ))}
-          </div>
+      <div style={headerStyle}>
+        <h2 style={titleStyle}>Все мемы</h2>
+        <div style={searchContainerStyle}>
+          <SearchIcon style={searchIconStyle} />
+          <input
+            type="text"
+            placeholder="Поиск по категории или описанию..."
+            style={searchInputStyle}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
-      ))}
+      </div>
+
+      {Object.keys(filteredMemes).length > 0 ? (
+        Object.keys(filteredMemes).map((category, index) => (
+          <div key={index}>
+            <div style={categoryStyle}>{category}</div>
+            <div style={cardMemsStyle}>
+              {filteredMemes[category].map((meme, idx) => (
+                <div key={idx} style={cardStyle}>
+                  <img
+                    src={meme.url}
+                    alt={meme.category}
+                    style={cardImageStyle}
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))
+      ) : (
+        <div style={emptyStateStyle}>
+          {searchTerm ? 'Ничего не найдено' : 'Нет доступных мемов'}
+        </div>
+      )}
     </div>
   );
 };

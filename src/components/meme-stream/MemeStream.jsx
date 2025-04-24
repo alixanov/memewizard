@@ -19,7 +19,7 @@ const AllStreams = () => {
     alignItems: 'center',
     marginBottom: '20px',
     flexWrap: 'wrap',
-    gap: '10px'
+    gap: '10px',
   };
 
   const titleStyle = {
@@ -37,7 +37,7 @@ const AllStreams = () => {
     border: '1px solid #ddd',
     padding: '8px 12px',
     width: '300px',
-    maxWidth: '100%'
+    maxWidth: '100%',
   };
 
   const searchInputStyle = {
@@ -45,12 +45,12 @@ const AllStreams = () => {
     outline: 'none',
     width: '100%',
     fontSize: '14px',
-    marginLeft: '8px'
+    marginLeft: '8px',
   };
 
   const searchIconStyle = {
     color: '#666',
-    fontSize: '20px'
+    fontSize: '20px',
   };
 
   const gridStyle = {
@@ -61,19 +61,21 @@ const AllStreams = () => {
 
   const cardStyle = {
     backgroundColor: '#ffffff',
-    borderRadius: '8px',
+    borderRadius: '6px', // Reduced for consistency with Home.jsx
     overflow: 'hidden',
     padding: '10px',
     width: '100%',
     height: '70px',
-    transition: 'background-color 0.3s, border 0.3s',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', // Subtle shadow like Home.jsx
+    border: '1px solid transparent', // Reserve space to prevent shifting
+    transition: 'background-color 0.3s, box-shadow 0.3s',
     cursor: 'pointer',
   };
 
   const cardHoverStyle = {
     ...cardStyle,
     backgroundColor: '#f0f1f5',
-    border: '1px solid #333',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)', // Shadow instead of border
   };
 
   const categoryStyle = {
@@ -96,12 +98,13 @@ const AllStreams = () => {
 
   const streamContentStyle = {
     backgroundColor: '#ffffff',
-    borderRadius: '8px',
+    borderRadius: '6px',
     padding: '20px',
     marginTop: '20px',
     display: 'flex',
     flexDirection: 'column',
     gap: '10px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', // Consistent shadow
   };
 
   const streamContentInnerStyle = {
@@ -147,17 +150,18 @@ const AllStreams = () => {
     border: 'none',
     cursor: 'pointer',
     alignSelf: 'flex-start',
+    transition: 'background-color 0.3s',
   };
 
-  // Example comments
+  // Example comments in English
   const exampleComments = [
-    { user: 'User1', text: 'Это супер мем!' },
-    { user: 'User2', text: 'Ха, котята всегда побеждают!' },
-    { user: 'User3', text: 'Гифки тут огонь!' },
+    { user: 'User1', text: 'This is a great meme!' },
+    { user: 'User2', text: 'Cats always win!' },
+    { user: 'User3', text: 'These GIFs are fire!' },
   ];
 
   // Filter streams based on search query
-  const filteredStreams = memeStreamsData.filter(stream => {
+  const filteredStreams = memeStreamsData.filter((stream) => {
     const query = searchQuery.toLowerCase();
     return (
       stream.category.toLowerCase().includes(query) ||
@@ -168,12 +172,12 @@ const AllStreams = () => {
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
-        <h2 style={titleStyle}>Все мем-потоки</h2>
+        <h2 style={titleStyle}>All Meme Streams</h2>
         <div style={searchContainerStyle}>
           <SearchIcon style={searchIconStyle} />
           <input
             type="text"
-            placeholder="Поиск по категории или описанию..."
+            placeholder="Search by category or description..."
             style={searchInputStyle}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -190,11 +194,13 @@ const AllStreams = () => {
                 style={hoveredCard === index ? cardHoverStyle : cardStyle}
                 onMouseEnter={() => setHoveredCard(index)}
                 onMouseLeave={() => setHoveredCard(null)}
-                onClick={() => setSelectedStream({
-                  ...stream,
-                  image: stream.image || 'https://via.placeholder.com/300x300',
-                  comments: stream.comments || exampleComments
-                })}
+                onClick={() =>
+                  setSelectedStream({
+                    ...stream,
+                    image: stream.image || 'https://via.placeholder.com/300x300',
+                    comments: stream.comments || exampleComments,
+                  })
+                }
               >
                 <div style={categoryStyle}>{stream.category}</div>
                 <div style={descriptionStyle}>{stream.description}</div>
@@ -202,7 +208,7 @@ const AllStreams = () => {
             ))
           ) : (
             <div style={{ fontSize: '14px', color: '#666' }}>
-              {searchQuery ? 'Ничего не найдено' : 'Нет доступных мем-потоков'}
+              {searchQuery ? 'Nothing found' : 'No meme streams available'}
             </div>
           )}
         </div>
@@ -224,12 +230,12 @@ const AllStreams = () => {
                   </div>
                 ))
               ) : (
-                <div style={{ fontSize: '12px', color: '#666' }}>Нет комментариев</div>
+                <div style={{ fontSize: '12px', color: '#666' }}>No comments</div>
               )}
             </div>
           </div>
           <button style={backButtonStyle} onClick={() => setSelectedStream(null)}>
-            Назад
+            Back
           </button>
         </div>
       )}
