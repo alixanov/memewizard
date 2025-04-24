@@ -12,7 +12,6 @@ import MessageIcon from '@mui/icons-material/Message';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SettingsIcon from '@mui/icons-material/Settings';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Typography, IconButton } from '@mui/material';
 import { Profile, MyMem } from '../../components/';
@@ -127,28 +126,33 @@ const MobileOptimizedMemeGallery = () => {
   };
 
   const bottomNavStyle = {
-    display: { xs: 'none', sm: 'flex' }, // Hide on mobile
-    justifyContent: 'space-around',
+    display: { xs: 'none', sm: 'flex' },
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
     backgroundColor: '#ffffff',
     borderTop: '1px solid #e0e0e0',
     position: 'fixed',
     bottom: 0,
     left: 0,
     right: 0,
-    padding: '8px 0',
+    padding: '8px 16px',
+    minHeight: '60px',
     zIndex: 10,
+    boxShadow: '0 -2px 4px rgba(0, 0, 0, 0.1)',
   };
 
   const topNavStyle = {
-    display: { xs: 'flex', sm: 'none' }, // Show on mobile
+    display: { xs: 'flex', sm: 'none' },
     justifyContent: 'space-around',
+    alignItems: 'center',
     backgroundColor: '#ffffff',
     borderBottom: '1px solid #e0e0e0',
     position: 'fixed',
-    top: '56px', // Below header
+    top: '56px',
     left: 0,
     right: 0,
     padding: '8px 0',
+    minHeight: '48px',
     zIndex: 10,
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   };
@@ -157,30 +161,36 @@ const MobileOptimizedMemeGallery = () => {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    fontSize: '12px',
+    fontSize: { xs: '10px', sm: '12px' },
     color: '#777',
     gap: '4px',
     padding: '4px 8px',
+    minWidth: '64px',
+    cursor: 'pointer',
+    transition: 'color 0.3s',
+    '&:hover': {
+      color: '#080733',
+    },
   };
 
   const activeTabStyle = {
     ...tabStyle,
     color: '#080733',
     fontWeight: 600,
+    '&:hover': {
+      color: '#080733',
+    },
   };
 
   const contentPaddingStyle = {
-    paddingTop: { xs: '104px', sm: '15px' }, // Header (56px) + Navbar (48px) on mobile
-    paddingBottom: { xs: '15px', sm: '60px' }, // Bottom nav on desktop
+    paddingTop: { xs: '104px', sm: '15px' },
+    paddingBottom: { xs: '15px', sm: '60px' },
   };
 
   // Bottom/top navigation tabs
   const tabs = [
-    { name: 'Profile', icon: <AccountCircleIcon sx={{ fontSize: '24px', color: '#080733' }} />, key: 'profile' },
     { name: 'Images', icon: <ImageIcon sx={{ fontSize: '24px', color: '#080733' }} />, key: 'images' },
-    { name: 'Templates', icon: <BookmarkIcon sx={{ fontSize: '24px', color: '#080733' }} />, key: 'templates' },
-    { name: 'Messages', icon: <MessageIcon sx={{ fontSize: '24px', color: '#080733' }} />, key: 'messages' },
-    { name: 'Menu', icon: <MenuIcon sx={{ fontSize: '24px', color: '#080733' }} />, key: 'menu' },
+    { name: 'Profile', icon: <AccountCircleIcon sx={{ fontSize: '24px', color: '#080733' }} />, key: 'profile' },
   ];
 
   // Sidebar items (exclude footer tabs)
@@ -196,7 +206,7 @@ const MobileOptimizedMemeGallery = () => {
 
   // Combined menu items for content rendering
   const allMenuItems = [
-    ...tabs.filter(tab => tab.key !== 'menu'),
+    ...tabs,
     ...sidebarItems,
   ];
 
@@ -276,11 +286,8 @@ const MobileOptimizedMemeGallery = () => {
 
   const handleTabClick = (tab, index) => {
     setActiveTab(index);
-    if (tab.key === 'menu') {
-      setIsSidebarOpen(true);
-    } else {
-      setActiveMenuItem(tab.key);
-    }
+    setActiveMenuItem(tab.key);
+    setIsSidebarOpen(false);
   };
 
   return (
@@ -319,7 +326,7 @@ const MobileOptimizedMemeGallery = () => {
             {React.cloneElement(tab.icon, {
               sx: { fontSize: '24px', color: activeTab === index ? '#080733' : '#777' },
             })}
-            <Typography sx={{ fontSize: '12px' }}>{tab.name}</Typography>
+            <Typography sx={{ fontSize: { xs: '10px', sm: '12px' } }}>{tab.name}</Typography>
           </Box>
         ))}
       </Box>
@@ -366,7 +373,7 @@ const MobileOptimizedMemeGallery = () => {
             {React.cloneElement(tab.icon, {
               sx: { fontSize: '24px', color: activeTab === index ? '#080733' : '#777' },
             })}
-            <Typography sx={{ fontSize: '12px' }}>{tab.name}</Typography>
+            <Typography sx={{ fontSize: { xs: '10px', sm: '12px' } }}>{tab.name}</Typography>
           </Box>
         ))}
       </Box>
