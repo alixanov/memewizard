@@ -17,7 +17,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Typography, IconButton } from '@mui/material';
-import { Profile } from '../../components/';
+import { Profile, MyMem } from '../../components/';
 
 const MemeGallery = () => {
   const [activeButton, setActiveButton] = useState(null);
@@ -158,10 +158,11 @@ const MemeGallery = () => {
         return <Profile />;
       case 'images':
         return (
-          <>
-            <Typography variant="h2" sx={contentTitleStyle}>My Images</Typography>
-            <Typography sx={contentTextStyle}>List of your saved images.</Typography>
-          </>
+          // <>
+          //   <Typography variant="h2" sx={contentTitleStyle}>My Images</Typography>
+          //   <Typography sx={contentTextStyle}>List of your saved images.</Typography>
+          <MyMem/>
+          // </>
         );
    
    

@@ -11,6 +11,7 @@ import {
   IconButton,
 } from '@mui/material';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 const Profile = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -53,11 +54,11 @@ const Profile = () => {
         setCurrentUser(user);
         navigate('/gallery');
       } else {
-        setError('Неверный email или пароль');
+        setError('Invalid email or password');
       }
     } else {
       if (!formData.email || !formData.password || !formData.name) {
-        setError('Все поля обязательны');
+        setError('All fields are required');
         return;
       }
 
@@ -65,7 +66,7 @@ const Profile = () => {
       const userExists = users.some((u) => u.email === formData.email);
 
       if (userExists) {
-        setError('Пользователь с этим email уже существует');
+        setError('User with this email already exists');
       } else {
         const newUser = {
           name: formData.name,
@@ -77,7 +78,7 @@ const Profile = () => {
         localStorage.setItem('users', JSON.stringify(users));
         localStorage.setItem('currentUser', JSON.stringify(newUser));
         setCurrentUser(newUser);
-        navigate('/');
+        navigate('/gallery');
       }
     }
   };
@@ -95,6 +96,10 @@ const Profile = () => {
     setFormData({ email: '', password: '', name: '' });
   };
 
+  const handleCreateMeme = () => {
+    navigate('/editor');
+  };
+
   const colorScheme = {
     primary: '#080733',
     secondary: '#ffffff',
@@ -105,11 +110,10 @@ const Profile = () => {
 
   if (currentUser) {
     return (
-      <Container maxWidth="xs" sx={{ mt: 4 }}>
-        <Box sx={{ p: 2 }}>
+      <Container maxWidth="xs" sx={{ mt: 4, bgcolor: '#f8f9fa', minHeight: '100vh', }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-            <Typography variant="h5" sx={{ color: colorScheme.text, fontWeight: '600' }}>
-              Личный кабинет
+            <Typography variant="h5" sx={{ color: colorScheme.text, fontWeight: 600, fontSize: '24px',textAlign:"center",width:"100% "}}>
+              Personal Account
             </Typography>
             <IconButton
               onClick={handleLogout}
@@ -117,11 +121,12 @@ const Profile = () => {
                 color: colorScheme.primary,
                 '&:hover': { bgcolor: 'rgba(8, 7, 51, 0.1)' },
               }}
+              aria-label="Logout"
             >
               <ExitToAppIcon />
             </IconButton>
           </Box>
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
             <Avatar
               sx={{
                 bgcolor: colorScheme.primary,
@@ -132,16 +137,38 @@ const Profile = () => {
             >
               {currentUser.name.charAt(0).toUpperCase()}
             </Avatar>
-            <Typography variant="h6" sx={{ color: colorScheme.text, fontWeight: '500' }}>
+            <Typography variant="h6" sx={{ color: colorScheme.text, fontWeight: 500, fontSize: '20px' }}>
               {currentUser.name}
             </Typography>
-            <Typography variant="body2" sx={{ color: colorScheme.secondaryText }}>
+            <Typography variant="body2" sx={{ color: colorScheme.secondaryText, fontSize: '14px' }}>
               {currentUser.email}
             </Typography>
+            <Button
+              variant="outlined"
+              startIcon={<AddCircleOutlineIcon sx={{ fontSize: '20px' }} />}
+              onClick={handleCreateMeme}
+              sx={{
+                mt: 1,
+                py: 1,
+                px: 2,
+                color: colorScheme.primary,
+                borderColor: colorScheme.primary,
+                bgcolor: colorScheme.secondary,
+                fontSize: '16px',
+                fontWeight: 500,
+                textTransform: 'none',
+                borderRadius: '4px',
+                '&:hover': {
+                  bgcolor: '#f0f1f5',
+                  borderColor: colorScheme.primary,
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                },
+              }}
+            >
+              Create Meme
+            </Button>
           </Box>
-        </Box>
       </Container>
-
     );
   }
 
@@ -153,22 +180,24 @@ const Profile = () => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
+        bgcolor: '#f8f9fa',
       }}
     >
-      <Paper elevation={0} sx={{ p: 2, bgcolor: colorScheme.background }}>
+      <Paper elevation={0} sx={{ p: 2, bgcolor: colorScheme.background, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
         <Typography
           variant="h5"
           sx={{
             color: colorScheme.text,
-            fontWeight: '600',
+            fontWeight: 600,
             mb: 2,
             textAlign: 'center',
+            fontSize: '24px',
           }}
         >
-          {isLogin ? 'Авторизация' : 'Регистрация'}
+          {isLogin ? 'Login' : 'Register'}
         </Typography>
         {error && (
-          <Typography color="error" variant="body2" sx={{ mb: 1, textAlign: 'center' }}>
+          <Typography color="error" variant="body2" sx={{ mb: 1, textAlign: 'center', fontSize: '14px' }}>
             {error}
           </Typography>
         )}
@@ -176,7 +205,7 @@ const Profile = () => {
           {!isLogin && (
             <TextField
               fullWidth
-              label="Имя"
+              label="Name"
               name="name"
               value={formData.name}
               onChange={handleChange}
@@ -240,7 +269,7 @@ const Profile = () => {
           />
           <TextField
             fullWidth
-            label="Пароль"
+            label="Password"
             name="password"
             type="password"
             value={formData.password}
@@ -278,10 +307,13 @@ const Profile = () => {
               py: 1,
               bgcolor: colorScheme.primary,
               color: colorScheme.secondary,
+              fontSize: '16px',
+              fontWeight: 500,
+              textTransform: 'none',
               '&:hover': { bgcolor: 'rgba(8, 7, 51, 0.8)' },
             }}
           >
-            {isLogin ? 'Войти' : 'Зарегистрироваться'}
+            {isLogin ? 'Login' : 'Register'}
           </Button>
           <Typography
             variant="body2"
@@ -289,19 +321,21 @@ const Profile = () => {
               mt: 1,
               textAlign: 'center',
               color: colorScheme.secondaryText,
+              fontSize: '14px',
             }}
           >
-            {isLogin ? 'Нет аккаунта?' : 'Уже есть аккаунт?'}
+            {isLogin ? "Don't have an account?" : 'Already have an account?'}
             <Button
               onClick={toggleAuthMode}
               sx={{
                 color: colorScheme.primary,
                 textTransform: 'none',
                 ml: 0.5,
+                fontSize: '14px',
                 '&:hover': { bgcolor: 'rgba(8, 7, 51, 0.1)' },
               }}
             >
-              {isLogin ? 'Регистрация' : 'Войти'}
+              {isLogin ? 'Register' : 'Login'}
             </Button>
           </Typography>
         </form>

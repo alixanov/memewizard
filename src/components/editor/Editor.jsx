@@ -134,6 +134,17 @@ const Editor = () => {
     link.click();
   };
 
+  const handlePublish = () => {
+    const meme = {
+      id: Date.now(), // Unique ID based on timestamp
+      image,
+      texts,
+    };
+    const existingMemes = JSON.parse(localStorage.getItem('publishedMemes') || '[]');
+    localStorage.setItem('publishedMemes', JSON.stringify([...existingMemes, meme]));
+    alert('Meme published successfully!');
+  };
+
   const calculateTextPosition = (text, styles, canvas) => {
     const ctx = canvas.getContext('2d');
     ctx.font = `${styles.fontStyle === 'italic' ? 'italic ' : ''}${styles.fontWeight === 'bold' ? 'bold ' : ''
@@ -243,17 +254,18 @@ const Editor = () => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
+        bgcolor: '#f8f9fa', // Match background with other components
       }}
     >
-      <Paper elevation={0} sx={{ p: 2, bgcolor: colorScheme.background, maxWidth: 800, width: '100%' }}>
+      <Paper elevation={0} sx={{ p: 2, bgcolor: colorScheme.background, maxWidth: 800, width: '100%', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
         <Typography
           variant="h5"
           sx={{ color: colorScheme.text, fontWeight: '600', mb: 2, textAlign: 'center' }}
         >
-          Создатель Мемов
+          Meme Creator
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {/* Панель инструментов */}
+          {/* Toolbar */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Button
               variant="contained"
@@ -265,7 +277,7 @@ const Editor = () => {
                 '&:hover': { bgcolor: 'rgba(8, 7, 51, 0.8)' },
               }}
             >
-              Загрузить изображение
+              Upload Image
               <input
                 type="file"
                 accept=".jpg,.png,.gif"
@@ -276,7 +288,7 @@ const Editor = () => {
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               <TextField
                 fullWidth
-                label="Текст мема"
+                label="Meme Text"
                 value={activeText?.text || ''}
                 onChange={(e) => handleTextChange(activeTextId, e.target.value)}
                 size="small"
@@ -322,7 +334,7 @@ const Editor = () => {
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               <FormControl size="small" sx={{ minWidth: 120 }}>
                 <InputLabel sx={{ color: colorScheme.secondaryText, '&.Mui-focused': { color: colorScheme.primary } }}>
-                  Шрифт
+                  Font
                 </InputLabel>
                 <Select
                   value={activeText?.styles.fontFamily || 'Arial'}
@@ -343,7 +355,7 @@ const Editor = () => {
               </FormControl>
               <FormControl size="small" sx={{ minWidth: 120 }}>
                 <InputLabel sx={{ color: colorScheme.secondaryText, '&.Mui-focused': { color: colorScheme.primary } }}>
-                  Размер шрифта
+                  Font Size
                 </InputLabel>
                 <Select
                   value={activeText?.styles.fontSize || 24}
@@ -365,7 +377,7 @@ const Editor = () => {
               </FormControl>
               <FormControl size="small" sx={{ minWidth: 120 }}>
                 <InputLabel sx={{ color: colorScheme.secondaryText, '&.Mui-focused': { color: colorScheme.primary } }}>
-                  Стиль
+                  Weight
                 </InputLabel>
                 <Select
                   value={activeText?.styles.fontWeight || 'bold'}
@@ -378,13 +390,13 @@ const Editor = () => {
                     '& .MuiSelect-icon': { color: colorScheme.text },
                   }}
                 >
-                  <MenuItem value="normal">Обычный</MenuItem>
-                  <MenuItem value="bold">Жирный</MenuItem>
+                  <MenuItem value="normal">Normal</MenuItem>
+                  <MenuItem value="bold">Bold</MenuItem>
                 </Select>
               </FormControl>
               <FormControl size="small" sx={{ minWidth: 120 }}>
                 <InputLabel sx={{ color: colorScheme.secondaryText, '&.Mui-focused': { color: colorScheme.primary } }}>
-                  Курсив
+                  Italic
                 </InputLabel>
                 <Select
                   value={activeText?.styles.fontStyle || 'normal'}
@@ -397,13 +409,13 @@ const Editor = () => {
                     '& .MuiSelect-icon': { color: colorScheme.text },
                   }}
                 >
-                  <MenuItem value="normal">Нет</MenuItem>
-                  <MenuItem value="italic">Да</MenuItem>
+                  <MenuItem value="normal">No</MenuItem>
+                  <MenuItem value="italic">Yes</MenuItem>
                 </Select>
               </FormControl>
               <FormControl size="small" sx={{ minWidth: 120 }}>
                 <InputLabel sx={{ color: colorScheme.secondaryText, '&.Mui-focused': { color: colorScheme.primary } }}>
-                  Положение
+                  Position
                 </InputLabel>
                 <Select
                   value={activeText?.styles.textPosition || 'center'}
@@ -416,16 +428,16 @@ const Editor = () => {
                     '& .MuiSelect-icon': { color: colorScheme.text },
                   }}
                 >
-                  <MenuItem value="start">Начало</MenuItem>
-                  <MenuItem value="end">Конец</MenuItem>
-                  <MenuItem value="top">Верх</MenuItem>
-                  <MenuItem value="bottom">Низ</MenuItem>
-                  <MenuItem value="center">Центр</MenuItem>
+                  <MenuItem value="start">Start</MenuItem>
+                  <MenuItem value="end">End</MenuItem>
+                  <MenuItem value="top">Top</MenuItem>
+                  <MenuItem value="bottom">Bottom</MenuItem>
+                  <MenuItem value="center">Center</MenuItem>
                 </Select>
               </FormControl>
               <TextField
                 type="color"
-                label="Цвет текста"
+                label="Text Color"
                 value={activeText?.styles.color || '#ffffff'}
                 onChange={(e) => handleStyleChange(activeTextId, 'color', e.target.value)}
                 size="small"
@@ -444,7 +456,7 @@ const Editor = () => {
               />
               <TextField
                 type="color"
-                label="Цвет контура"
+                label="Stroke Color"
                 value={activeText?.styles.strokeColor || '#000000'}
                 onChange={(e) => handleStyleChange(activeTextId, 'strokeColor', e.target.value)}
                 size="small"
@@ -463,7 +475,7 @@ const Editor = () => {
               />
               <FormControl size="small" sx={{ minWidth: 120 }}>
                 <InputLabel sx={{ color: colorScheme.secondaryText, '&.Mui-focused': { color: colorScheme.primary } }}>
-                  Толщина контура
+                  Stroke Width
                 </InputLabel>
                 <Select
                   value={activeText?.styles.strokeWidth || 0}
@@ -476,7 +488,7 @@ const Editor = () => {
                     '& .MuiSelect-icon': { color: colorScheme.text },
                   }}
                 >
-                  <MenuItem value={0}>Нет</MenuItem>
+                  <MenuItem value={0}>None</MenuItem>
                   <MenuItem value={1}>1px</MenuItem>
                   <MenuItem value={2}>2px</MenuItem>
                   <MenuItem value={3}>3px</MenuItem>
@@ -484,7 +496,7 @@ const Editor = () => {
               </FormControl>
               <FormControl size="small" sx={{ minWidth: 120 }}>
                 <InputLabel sx={{ color: colorScheme.secondaryText, '&.Mui-focused': { color: colorScheme.primary } }}>
-                  Тень
+                  Shadow
                 </InputLabel>
                 <Select
                   value={activeText?.styles.textShadow || '2px 2px 4px #000000'}
@@ -497,14 +509,14 @@ const Editor = () => {
                     '& .MuiSelect-icon': { color: colorScheme.text },
                   }}
                 >
-                  <MenuItem value="none">Без тени</MenuItem>
-                  <MenuItem value="2px 2px 4px #000000">Черная тень</MenuItem>
-                  <MenuItem value="2px 2px 4px #ffffff">Белая тень</MenuItem>
+                  <MenuItem value="none">No Shadow</MenuItem>
+                  <MenuItem value="2px 2px 4px #000000">Black Shadow</MenuItem>
+                  <MenuItem value="2px 2px 4px #ffffff">White Shadow</MenuItem>
                 </Select>
               </FormControl>
               <TextField
                 type="number"
-                label="Прозрачность"
+                label="Opacity"
                 value={activeText?.styles.opacity || 1}
                 onChange={(e) =>
                   handleStyleChange(activeTextId, 'opacity', Math.max(0, Math.min(1, e.target.value)))
@@ -525,7 +537,7 @@ const Editor = () => {
               />
             </Box>
           </Box>
-          {/* Область предпросмотра */}
+          {/* Preview Area */}
           <Box
             sx={{
               position: 'relative',
@@ -568,7 +580,7 @@ const Editor = () => {
                         '&:hover': { opacity: 0.8 },
                       }}
                     >
-                      {text || 'Перетащите для позиционирования'}
+                      {text || 'Drag to position'}
                     </Box>
                   </Draggable>
                 ))}
@@ -578,26 +590,43 @@ const Editor = () => {
                 variant="body2"
                 sx={{ color: colorScheme.secondaryText, textAlign: 'center', py: 4 }}
               >
-                Загрузите изображение для создания мема
+                Upload an image to create a meme
               </Typography>
             )}
           </Box>
-          {/* Кнопка сохранения */}
-          <Button
-            variant="contained"
-            onClick={handleSave}
-            disabled={!image}
-            sx={{
-              py: 1,
-              mt: 2,
-              bgcolor: colorScheme.primary,
-              color: colorScheme.secondary,
-              '&:hover': { bgcolor: 'rgba(8, 7, 51, 0.8)' },
-              '&:disabled': { bgcolor: '#e0e0e0', color: '#555' },
-            }}
-          >
-            Скачать мем
-          </Button>
+          {/* Action Buttons */}
+          <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+            <Button
+              variant="contained"
+              onClick={handleSave}
+              disabled={!image}
+              sx={{
+                py: 1,
+                flex: 1,
+                bgcolor: colorScheme.primary,
+                color: colorScheme.secondary,
+                '&:hover': { bgcolor: 'rgba(8, 7, 51, 0.8)' },
+                '&:disabled': { bgcolor: '#e0e0e0', color: '#555' },
+              }}
+            >
+              Download Meme
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handlePublish}
+              disabled={!image}
+              sx={{
+                py: 1,
+                flex: 1,
+                bgcolor: colorScheme.primary,
+                color: colorScheme.secondary,
+                '&:hover': { bgcolor: 'rgba(8, 7, 51, 0.8)' },
+                '&:disabled': { bgcolor: '#e0e0e0', color: '#555' },
+              }}
+            >
+              Publish Meme
+            </Button>
+          </Box>
         </Box>
       </Paper>
     </Container>

@@ -34,7 +34,7 @@ const Home = () => {
     backgroundColor: '#ffffff',
     borderRadius: '6px',
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    border: '1px solid transparent', // Зарезервировать место для границы
+    border: '1px solid transparent', // Reserve space for border
     cursor: 'pointer',
     transition: 'background-color 0.3s, box-shadow 0.3s',
   };
@@ -42,7 +42,7 @@ const Home = () => {
   const featureItemHoverStyle = {
     ...featureItemStyle,
     backgroundColor: '#f0f1f5',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)', // Усиление тени вместо границы
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)', // Enhanced shadow instead of border
   };
 
   const featureTextStyle = {
@@ -84,7 +84,7 @@ const Home = () => {
   const allLinkHoverStyle = {
     ...allLinkStyle,
     backgroundColor: '#f0f1f5',
-    color: '#080733', // Более насыщенный цвет при наведении
+    color: '#080733', // More saturated color on hover
   };
 
   const cardMemsStyle = {
@@ -114,7 +114,7 @@ const Home = () => {
     backgroundColor: '#ffffff',
     borderRadius: '4px',
     boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
-    border: '1px solid transparent', // Зарезервировать место
+    border: '1px solid transparent', // Reserve space
     overflow: 'hidden',
     width: '60px',
     height: '60px',
@@ -124,7 +124,7 @@ const Home = () => {
   const cardHoverStyle = {
     ...cardStyle,
     backgroundColor: '#f0f1f5',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.15)', // Усиление тени
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.15)', // Enhanced shadow
   };
 
   const cardImageStyle = {
@@ -143,7 +143,7 @@ const Home = () => {
 
   const allMemesLinkHoverStyle = {
     ...allMemesLinkStyle,
-    color: '#080733', // Более насыщенный цвет
+    color: '#080733', // More saturated color
   };
 
   const streamsSectionStyle = {
@@ -173,7 +173,7 @@ const Home = () => {
   const streamCardStyle = {
     backgroundColor: '#ffffff',
     borderRadius: '6px',
-    border: '1px solid transparent', // Зарезервировать место
+    border: '1px solid transparent', // Reserve space
     overflow: 'hidden',
     padding: '10px',
     transition: 'background-color 0.3s, box-shadow 0.3s',
@@ -183,7 +183,7 @@ const Home = () => {
   const streamCardHoverStyle = {
     ...streamCardStyle,
     backgroundColor: '#f0f1f5',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)', // Усиление тени
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)', // Enhanced shadow
   };
 
   const streamCategoryStyle = {
@@ -200,12 +200,12 @@ const Home = () => {
   };
 
   const features = [
-    { name: 'Сделать мем', icon: <DrawIcon style={{ color: '#080733', fontSize: '24px' }} />, link: '/editor' },
-    { name: 'Сделать GIF файл', icon: <AddCircleOutlineIcon style={{ color: '#080733', fontSize: '24px' }} />, link: '/editor' },
-    { name: 'Мем ИИ', icon: <AutoGraphIcon style={{ color: '#080733', fontSize: '24px' }} />, link: '/editor' },
-    { name: 'Диаграмма', icon: <ImageIcon style={{ color: '#080733', fontSize: '24px' }} />, link: '/editor' },
-    { name: 'Изменить размер', icon: <CropIcon style={{ color: '#080733', fontSize: '24px' }} />, link: '/editor' },
-    { name: 'Демотиватор', icon: <SentimentDissatisfiedIcon style={{ color: '#080733', fontSize: '24px' }} />, link: '/editor' },
+    { name: 'Create Meme', icon: <DrawIcon style={{ color: '#080733', fontSize: '24px' }} />, link: '/editor' },
+    { name: 'Create GIF', icon: <AddCircleOutlineIcon style={{ color: '#080733', fontSize: '24px' }} />, link: '/editor' },
+    { name: 'AI Meme', icon: <AutoGraphIcon style={{ color: '#080733', fontSize: '24px' }} />, link: '/editor' },
+    { name: 'Diagram', icon: <ImageIcon style={{ color: '#080733', fontSize: '24px' }} />, link: '/editor' },
+    { name: 'Resize', icon: <CropIcon style={{ color: '#080733', fontSize: '24px' }} />, link: '/editor' },
+    { name: 'Demotivator', icon: <SentimentDissatisfiedIcon style={{ color: '#080733', fontSize: '24px' }} />, link: '/editor' },
   ];
 
   const displayedMemes = memeData.slice(0, 14);
@@ -213,7 +213,7 @@ const Home = () => {
 
   return (
     <div style={containerStyle}>
-      {/* Список функций */}
+      {/* Features List */}
       <div style={featuresStyle}>
         {features.map((feature, index) => (
           <Link
@@ -229,10 +229,10 @@ const Home = () => {
         ))}
       </div>
 
-      {/* Мои творения */}
+      {/* My Creations */}
       <div style={myMemsStyle}>
         <Link to="/profile" style={myMemsLinkStyle}>
-          Мои творения
+          My Creations
         </Link>
         <Link
           to="/gallery"
@@ -240,21 +240,21 @@ const Home = () => {
           onMouseEnter={() => setHoveredCard('all')}
           onMouseLeave={() => setHoveredCard(null)}
         >
-          Все
+          All
         </Link>
       </div>
 
-      {/* Галерея мемов */}
+      {/* Meme Gallery */}
       <div style={cardMemsStyle}>
         <div style={cardMemsHeaderStyle}>
-          <div style={cardMemsTitleStyle}>Шаблоны</div>
+          <div style={cardMemsTitleStyle}>Templates</div>
           <Link
             to="/all-memes"
             style={hoveredCard === 'all-memes' ? allMemesLinkHoverStyle : allMemesLinkStyle}
             onMouseEnter={() => setHoveredCard('all-memes')}
             onMouseLeave={() => setHoveredCard(null)}
           >
-            Все
+            All
           </Link>
         </div>
         <div style={cardGridStyle}>
@@ -272,17 +272,17 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Мем-потоки */}
+      {/* Meme Streams */}
       <div style={streamsSectionStyle}>
         <div style={streamsHeaderStyle}>
-          <div style={streamsTitleStyle}>Мем-потоки</div>
+          <div style={streamsTitleStyle}>Meme Streams</div>
           <Link
             to="/all-streams"
             style={hoveredCard === 'all-streams' ? allMemesLinkHoverStyle : allMemesLinkStyle}
             onMouseEnter={() => setHoveredCard('all-streams')}
             onMouseLeave={() => setHoveredCard(null)}
           >
-            Все
+            All
           </Link>
         </div>
         <div style={streamsGridStyle}>
@@ -300,7 +300,7 @@ const Home = () => {
               </Link>
             ))
           ) : (
-            <div style={{ fontSize: '14px', color: '#666' }}>Нет доступных мем-потоков</div>
+            <div style={{ fontSize: '14px', color: '#666' }}>No meme streams available</div>
           )}
         </div>
       </div>
