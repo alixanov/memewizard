@@ -110,7 +110,7 @@ const Profile = () => {
 
   if (currentUser) {
     return (
-      <Container maxWidth="xs" sx={{ mt: 4, bgcolor: '#f8f9fa', minHeight: '100vh', }}>
+      <Container maxWidth="xs" sx={{ mt: 4, bgcolor: '#f8f9fa', minHeight: '70vh', }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
             <Typography variant="h5" sx={{ color: colorScheme.text, fontWeight: 600, fontSize: '24px',textAlign:"center",width:"100% "}}>
               Personal Account

@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ImageIcon from '@mui/icons-material/Image';
-import SearchIcon from '@mui/icons-material/Search';
-import HistoryIcon from '@mui/icons-material/History';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import StreamIcon from '@mui/icons-material/Stream';
@@ -19,29 +17,67 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Typography, IconButton } from '@mui/material';
 import { Profile, MyMem } from '../../components/';
 
-const MemeGallery = () => {
-  const [activeButton, setActiveButton] = useState(null);
+const MobileOptimizedMemeGallery = () => {
   const [activeMenuItem, setActiveMenuItem] = useState('profile');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
 
   const containerStyle = {
     display: 'flex',
+    flexDirection: 'column',
     minHeight: '100vh',
     backgroundColor: '#f8f9fa',
+    width: '100%',
+    overflowX: 'hidden',
+  };
+
+  const headerStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '10px 15px',
+    backgroundColor: '#ffffff',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
+  };
+
+  const headerTitleStyle = {
+    fontSize: '18px',
+    fontWeight: 700,
+    color: '#080733',
+    margin: 0,
   };
 
   const sidebarStyle = {
-    width: { xs: '100%', sm: '250px' }, // Full width on mobile, fixed on desktop
+    width: '85%',
+    maxWidth: '300px',
     backgroundColor: '#ffffff',
     padding: '15px',
-    boxShadow: { sm: '2px 0 4px rgba(0, 0, 0, 0.1)' }, // Shadow only on desktop
-    position: { xs: 'fixed', sm: 'sticky' },
+    boxShadow: '2px 0 8px rgba(0, 0, 0, 0.2)',
+    position: 'fixed',
     top: 0,
-    height: { xs: '100vh', sm: '100vh' },
+    bottom: 0,
+    left: 0,
+    height: '100vh',
     zIndex: 1000,
-    transform: { xs: isSidebarOpen ? 'translateX(0)' : 'translateX(-100%)', sm: 'none' },
+    transform: isSidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
     transition: 'transform 0.3s ease-in-out',
-    display: { xs: isSidebarOpen ? 'block' : 'none', sm: 'block' },
+    overflowY: 'auto',
+  };
+
+  const overlayStyle = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 999,
+    opacity: isSidebarOpen ? 1 : 0,
+    visibility: isSidebarOpen ? 'visible' : 'hidden',
+    transition: 'opacity 0.3s, visibility 0.3s',
   };
 
   const sidebarTitleStyle = {
@@ -49,6 +85,9 @@ const MemeGallery = () => {
     fontWeight: 700,
     color: '#080733',
     mb: '20px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   };
 
   const buttonContainerStyle = {
@@ -60,25 +99,18 @@ const MemeGallery = () => {
   const buttonStyle = {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: '12px',
     width: '100%',
-    padding: '10px',
-    fontSize: '14px',
+    padding: '12px',
+    fontSize: '16px',
     fontWeight: 500,
     color: '#555',
     backgroundColor: '#ffffff',
-    border: '1px solid transparent', // Prevent shifting
+    border: 'none',
     borderRadius: '4px',
     textTransform: 'none',
     justifyContent: 'flex-start',
-    transition: 'background-color 0.3s, color 0.3s, box-shadow 0.3s',
-  };
-
-  const buttonHoverStyle = {
-    ...buttonStyle,
-    backgroundColor: '#f0f1f5',
-    color: '#080733',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    transition: 'background-color 0.3s, color 0.3s',
   };
 
   const buttonActiveStyle = {
@@ -86,70 +118,86 @@ const MemeGallery = () => {
     backgroundColor: '#e6e8f0',
     color: '#080733',
     fontWeight: 600,
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   };
 
   const contentStyle = {
     flex: 1,
-    padding: '20px',
-    maxWidth: '1200px',
-    margin: '0 auto',
+    padding: '15px',
+    width: '100%',
   };
 
-  const contentTitleStyle = {
-    fontSize: '24px',
-    fontWeight: 700,
-    color: '#080733',
-    mb: '15px',
-  };
-
-  const contentTextStyle = {
-    fontSize: '16px',
-    color: '#555',
-    mb: '10px',
-  };
-
-  const createButtonStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '10px 20px',
-    fontSize: '16px',
-    fontWeight: 600,
-    color: '#080733',
+  const bottomNavStyle = {
+    display: { xs: 'none', sm: 'flex' }, // Hide on mobile
+    justifyContent: 'space-around',
     backgroundColor: '#ffffff',
-    border: '1px solid #080733',
-    borderRadius: '4px',
-    textDecoration: 'none',
-    transition: 'background-color 0.3s',
-    textTransform: 'none',
-  };
-
-  const createButtonHoverStyle = {
-    ...createButtonStyle,
-    backgroundColor: '#f0f1f5',
-  };
-
-  const hamburgerStyle = {
-    display: { xs: 'block', sm: 'none' },
+    borderTop: '1px solid #e0e0e0',
     position: 'fixed',
-    top: '10px',
-    left: '10px',
-    zIndex: 1100,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: '8px 0',
+    zIndex: 10,
   };
 
-  const menuItems = [
-    { name: 'Profile', icon: <AccountCircleIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'profile' },
-    { name: 'My Images', icon: <ImageIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'images' },
-    { name: 'Update', icon: <RefreshIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'update' },
-    { name: 'My Templates', icon: <BookmarkIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'templates' },
-    { name: 'My Streams', icon: <StreamIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'streams' },
-    { name: 'My Votes', icon: <ThumbUpIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'votes' },
-    { name: 'My Comments', icon: <CommentIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'comments' },
-    { name: 'Top Users', icon: <StarIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'top-users' },
-    { name: 'Messages', icon: <MessageIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'messages' },
-    { name: 'Notifications', icon: <NotificationsIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'notifications' },
-    { name: 'Settings', icon: <SettingsIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'settings' },
+  const topNavStyle = {
+    display: { xs: 'flex', sm: 'none' }, // Show on mobile
+    justifyContent: 'space-around',
+    backgroundColor: '#ffffff',
+    borderBottom: '1px solid #e0e0e0',
+    position: 'fixed',
+    top: '56px', // Below header
+    left: 0,
+    right: 0,
+    padding: '8px 0',
+    zIndex: 10,
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  };
+
+  const tabStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    fontSize: '12px',
+    color: '#777',
+    gap: '4px',
+    padding: '4px 8px',
+  };
+
+  const activeTabStyle = {
+    ...tabStyle,
+    color: '#080733',
+    fontWeight: 600,
+  };
+
+  const contentPaddingStyle = {
+    paddingTop: { xs: '104px', sm: '15px' }, // Header (56px) + Navbar (48px) on mobile
+    paddingBottom: { xs: '15px', sm: '60px' }, // Bottom nav on desktop
+  };
+
+  // Bottom/top navigation tabs
+  const tabs = [
+    { name: 'Profile', icon: <AccountCircleIcon sx={{ fontSize: '24px', color: '#080733' }} />, key: 'profile' },
+    { name: 'Images', icon: <ImageIcon sx={{ fontSize: '24px', color: '#080733' }} />, key: 'images' },
+    { name: 'Templates', icon: <BookmarkIcon sx={{ fontSize: '24px', color: '#080733' }} />, key: 'templates' },
+    { name: 'Messages', icon: <MessageIcon sx={{ fontSize: '24px', color: '#080733' }} />, key: 'messages' },
+    { name: 'Menu', icon: <MenuIcon sx={{ fontSize: '24px', color: '#080733' }} />, key: 'menu' },
+  ];
+
+  // Sidebar items (exclude footer tabs)
+  const sidebarItems = [
+    { name: 'Update', icon: <RefreshIcon sx={{ fontSize: '22px', color: '#080733' }} />, key: 'update' },
+    { name: 'My Streams', icon: <StreamIcon sx={{ fontSize: '22px', color: '#080733' }} />, key: 'streams' },
+    { name: 'My Votes', icon: <ThumbUpIcon sx={{ fontSize: '22px', color: '#080733' }} />, key: 'votes' },
+    { name: 'My Comments', icon: <CommentIcon sx={{ fontSize: '22px', color: '#080733' }} />, key: 'comments' },
+    { name: 'Top Users', icon: <StarIcon sx={{ fontSize: '22px', color: '#080733' }} />, key: 'top-users' },
+    { name: 'Notifications', icon: <NotificationsIcon sx={{ fontSize: '22px', color: '#080733' }} />, key: 'notifications' },
+    { name: 'Settings', icon: <SettingsIcon sx={{ fontSize: '22px', color: '#080733' }} />, key: 'settings' },
+  ];
+
+  // Combined menu items for content rendering
+  const allMenuItems = [
+    ...tabs.filter(tab => tab.key !== 'menu'),
+    ...sidebarItems,
   ];
 
   const renderContent = () => {
@@ -157,76 +205,68 @@ const MemeGallery = () => {
       case 'profile':
         return <Profile />;
       case 'images':
-        return (
-          // <>
-          //   <Typography variant="h2" sx={contentTitleStyle}>My Images</Typography>
-          //   <Typography sx={contentTextStyle}>List of your saved images.</Typography>
-          <MyMem/>
-          // </>
-        );
-   
-   
+        return <MyMem />;
       case 'update':
         return (
           <>
-            <Typography variant="h2" sx={contentTitleStyle}>Update</Typography>
-            <Typography sx={contentTextStyle}>Update your memes.</Typography>
+            <Typography variant="h2" sx={{ fontSize: '20px', fontWeight: 700, mb: 2 }}>Update</Typography>
+            <Typography sx={{ fontSize: '14px' }}>Update your memes.</Typography>
           </>
         );
       case 'templates':
         return (
           <>
-            <Typography variant="h2" sx={contentTitleStyle}>My Templates</Typography>
-            <Typography sx={contentTextStyle}>List of your templates.</Typography>
+            <Typography variant="h2" sx={{ fontSize: '20px', fontWeight: 700, mb: 2 }}>My Templates</Typography>
+            <Typography sx={{ fontSize: '14px' }}>List of your templates.</Typography>
           </>
         );
       case 'streams':
         return (
           <>
-            <Typography variant="h2" sx={contentTitleStyle}>My Streams</Typography>
-            <Typography sx={contentTextStyle}>Your activity streams.</Typography>
+            <Typography variant="h2" sx={{ fontSize: '20px', fontWeight: 700, mb: 2 }}>My Streams</Typography>
+            <Typography sx={{ fontSize: '14px' }}>Your activity streams.</Typography>
           </>
         );
       case 'votes':
         return (
           <>
-            <Typography variant="h2" sx={contentTitleStyle}>My Votes</Typography>
-            <Typography sx={contentTextStyle}>Your votes for memes.</Typography>
+            <Typography variant="h2" sx={{ fontSize: '20px', fontWeight: 700, mb: 2 }}>My Votes</Typography>
+            <Typography sx={{ fontSize: '14px' }}>Your votes for memes.</Typography>
           </>
         );
       case 'comments':
         return (
           <>
-            <Typography variant="h2" sx={contentTitleStyle}>My Comments</Typography>
-            <Typography sx={contentTextStyle}>Your comments on memes.</Typography>
+            <Typography variant="h2" sx={{ fontSize: '20px', fontWeight: 700, mb: 2 }}>My Comments</Typography>
+            <Typography sx={{ fontSize: '14px' }}>Your comments on memes.</Typography>
           </>
         );
       case 'top-users':
         return (
           <>
-            <Typography variant="h2" sx={contentTitleStyle}>Top Users</Typography>
-            <Typography sx={contentTextStyle}>Ranking of top users.</Typography>
+            <Typography variant="h2" sx={{ fontSize: '20px', fontWeight: 700, mb: 2 }}>Top Users</Typography>
+            <Typography sx={{ fontSize: '14px' }}>Ranking of top users.</Typography>
           </>
         );
       case 'messages':
         return (
           <>
-            <Typography variant="h2" sx={contentTitleStyle}>Messages</Typography>
-            <Typography sx={contentTextStyle}>Your messages.</Typography>
+            <Typography variant="h2" sx={{ fontSize: '20px', fontWeight: 700, mb: 2 }}>Messages</Typography>
+            <Typography sx={{ fontSize: '14px' }}>Your messages.</Typography>
           </>
         );
       case 'notifications':
         return (
           <>
-            <Typography variant="h2" sx={contentTitleStyle}>Notifications</Typography>
-            <Typography sx={contentTextStyle}>Your notifications.</Typography>
+            <Typography variant="h2" sx={{ fontSize: '20px', fontWeight: 700, mb: 2 }}>Notifications</Typography>
+            <Typography sx={{ fontSize: '14px' }}>Your notifications.</Typography>
           </>
         );
       case 'settings':
         return (
           <>
-            <Typography variant="h2" sx={contentTitleStyle}>Settings</Typography>
-            <Typography sx={contentTextStyle}>Configure your profile.</Typography>
+            <Typography variant="h2" sx={{ fontSize: '20px', fontWeight: 700, mb: 2 }}>Settings</Typography>
+            <Typography sx={{ fontSize: '14px' }}>Configure your profile.</Typography>
           </>
         );
       default:
@@ -234,33 +274,75 @@ const MemeGallery = () => {
     }
   };
 
+  const handleTabClick = (tab, index) => {
+    setActiveTab(index);
+    if (tab.key === 'menu') {
+      setIsSidebarOpen(true);
+    } else {
+      setActiveMenuItem(tab.key);
+    }
+  };
+
   return (
     <Box sx={containerStyle}>
-      {/* Hamburger Menu for Mobile */}
-      <IconButton sx={hamburgerStyle} onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
-        {isSidebarOpen ? <CloseIcon sx={{ color: '#080733' }} /> : <MenuIcon sx={{ color: '#080733' }} />}
-      </IconButton>
+      {/* Header */}
+      <Box sx={headerStyle}>
+        <Typography variant="h1" sx={headerTitleStyle}>
+          {allMenuItems.find(item => item.key === activeMenuItem)?.name || 'Profile'}
+        </Typography>
+        <Link to="/editor" style={{ textDecoration: 'none' }}>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<AddCircleOutlineIcon sx={{ color: '#080733' }} />}
+            sx={{
+              color: '#080733',
+              borderColor: '#080733',
+              textTransform: 'none',
+              fontSize: '14px',
+              padding: '4px 10px',
+            }}
+          >
+            Create
+          </Button>
+        </Link>
+      </Box>
+
+      {/* Top Navigation (Mobile) */}
+      <Box sx={topNavStyle}>
+        {tabs.map((tab, index) => (
+          <Box
+            key={index}
+            sx={activeTab === index ? activeTabStyle : tabStyle}
+            onClick={() => handleTabClick(tab, index)}
+          >
+            {React.cloneElement(tab.icon, {
+              sx: { fontSize: '24px', color: activeTab === index ? '#080733' : '#777' },
+            })}
+            <Typography sx={{ fontSize: '12px' }}>{tab.name}</Typography>
+          </Box>
+        ))}
+      </Box>
+
+      {/* Sidebar Overlay */}
+      <Box sx={overlayStyle} onClick={() => setIsSidebarOpen(false)} />
 
       {/* Sidebar */}
       <Box sx={sidebarStyle}>
-        <Typography variant="h3" sx={sidebarTitleStyle}>Profile</Typography>
+        <Box sx={sidebarTitleStyle}>
+          <Typography variant="h3" sx={{ fontSize: '18px', fontWeight: 700 }}>Menu</Typography>
+          <IconButton onClick={() => setIsSidebarOpen(false)} sx={{ padding: '4px' }}>
+            <CloseIcon sx={{ color: '#080733' }} />
+          </IconButton>
+        </Box>
         <Box sx={buttonContainerStyle}>
-
-          {menuItems.map((item, index) => (
+          {sidebarItems.map((item, index) => (
             <Button
               key={index}
-              sx={
-                activeMenuItem === item.key
-                  ? buttonActiveStyle
-                  : activeButton === index
-                    ? buttonHoverStyle
-                    : buttonStyle
-              }
-              onMouseEnter={() => setActiveButton(index)}
-              onMouseLeave={() => setActiveButton(null)}
+              sx={activeMenuItem === item.key ? buttonActiveStyle : buttonStyle}
               onClick={() => {
                 setActiveMenuItem(item.key);
-                setIsSidebarOpen(false); // Close sidebar on mobile
+                setIsSidebarOpen(false);
               }}
             >
               {item.icon}
@@ -271,9 +353,25 @@ const MemeGallery = () => {
       </Box>
 
       {/* Main Content */}
-      <Box sx={contentStyle}>{renderContent()}</Box>
+      <Box sx={{ ...contentStyle, ...contentPaddingStyle }}>{renderContent()}</Box>
+
+      {/* Bottom Navigation (Desktop) */}
+      <Box sx={bottomNavStyle}>
+        {tabs.map((tab, index) => (
+          <Box
+            key={index}
+            sx={activeTab === index ? activeTabStyle : tabStyle}
+            onClick={() => handleTabClick(tab, index)}
+          >
+            {React.cloneElement(tab.icon, {
+              sx: { fontSize: '24px', color: activeTab === index ? '#080733' : '#777' },
+            })}
+            <Typography sx={{ fontSize: '12px' }}>{tab.name}</Typography>
+          </Box>
+        ))}
+      </Box>
     </Box>
   );
 };
 
-export default MemeGallery;
+export default MobileOptimizedMemeGallery;

@@ -41,7 +41,7 @@ const memeStreamsData = [
   },
   {
     category: "Politics",
-    image: "https://i.pinimg.com/736x/7c/32/ca/7c32cac8224e024cee1c684ba2ba0035.jpg",
+    image: "https://i.pinimg.com/736x/5a/22/ba/5a22bae0f7f767063cd6f5822c45594b.jpg",
     description: "Humor and discussions on U.S. and global politics. Criticism and debates are welcome, but be constructive and avoid insults.",
     members: 11539,
     comments: [
