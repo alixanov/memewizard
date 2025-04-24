@@ -14,11 +14,15 @@ import MessageIcon from '@mui/icons-material/Message';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SettingsIcon from '@mui/icons-material/Settings';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { Profile } from "../../components/";
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
+import { Box, Button, Typography, IconButton } from '@mui/material';
+import { Profile } from '../../components/';
 
 const MemeGallery = () => {
   const [activeButton, setActiveButton] = useState(null);
-  const [activeMenuItem, setActiveMenuItem] = useState('profile'); // Set profile as default
+  const [activeMenuItem, setActiveMenuItem] = useState('profile');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const containerStyle = {
     display: 'flex',
@@ -27,20 +31,24 @@ const MemeGallery = () => {
   };
 
   const sidebarStyle = {
-    width: '250px',
+    width: { xs: '100%', sm: '250px' }, // Full width on mobile, fixed on desktop
     backgroundColor: '#ffffff',
     padding: '15px',
-    boxShadow: '2px 0 4px rgba(0, 0, 0, 0.1)',
-    position: 'sticky',
+    boxShadow: { sm: '2px 0 4px rgba(0, 0, 0, 0.1)' }, // Shadow only on desktop
+    position: { xs: 'fixed', sm: 'sticky' },
     top: 0,
-    height: '100vh',
+    height: { xs: '100vh', sm: '100vh' },
+    zIndex: 1000,
+    transform: { xs: isSidebarOpen ? 'translateX(0)' : 'translateX(-100%)', sm: 'none' },
+    transition: 'transform 0.3s ease-in-out',
+    display: { xs: isSidebarOpen ? 'block' : 'none', sm: 'block' },
   };
 
   const sidebarTitleStyle = {
     fontSize: '18px',
-    fontWeight: '700',
+    fontWeight: 700,
     color: '#080733',
-    marginBottom: '20px',
+    mb: '20px',
   };
 
   const buttonContainerStyle = {
@@ -56,28 +64,29 @@ const MemeGallery = () => {
     width: '100%',
     padding: '10px',
     fontSize: '14px',
-    fontWeight: '500',
+    fontWeight: 500,
     color: '#555',
     backgroundColor: '#ffffff',
-    border: '1px solid transparent',
+    border: '1px solid transparent', // Prevent shifting
     borderRadius: '4px',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s, color 0.3s, border-color 0.3s',
+    textTransform: 'none',
+    justifyContent: 'flex-start',
+    transition: 'background-color 0.3s, color 0.3s, box-shadow 0.3s',
   };
 
   const buttonHoverStyle = {
     ...buttonStyle,
     backgroundColor: '#f0f1f5',
     color: '#080733',
-    border: '1px solid #080733',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   };
 
   const buttonActiveStyle = {
     ...buttonStyle,
     backgroundColor: '#e6e8f0',
     color: '#080733',
-    fontWeight: '600',
-    border: '1px solid #080733',
+    fontWeight: 600,
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   };
 
   const contentStyle = {
@@ -89,30 +98,31 @@ const MemeGallery = () => {
 
   const contentTitleStyle = {
     fontSize: '24px',
-    fontWeight: '700',
+    fontWeight: 700,
     color: '#080733',
-    marginBottom: '15px',
+    mb: '15px',
   };
 
   const contentTextStyle = {
     fontSize: '16px',
     color: '#555',
-    marginBottom: '10px',
+    mb: '10px',
   };
 
   const createButtonStyle = {
-    display: 'inline-flex',
+    display: 'flex',
     alignItems: 'center',
     gap: '8px',
     padding: '10px 20px',
     fontSize: '16px',
-    fontWeight: '600',
+    fontWeight: 600,
     color: '#080733',
     backgroundColor: '#ffffff',
     border: '1px solid #080733',
     borderRadius: '4px',
     textDecoration: 'none',
-    transition: 'background-color 0.3s, border-color 0.3s',
+    transition: 'background-color 0.3s',
+    textTransform: 'none',
   };
 
   const createButtonHoverStyle = {
@@ -120,20 +130,26 @@ const MemeGallery = () => {
     backgroundColor: '#f0f1f5',
   };
 
+  const hamburgerStyle = {
+    display: { xs: 'block', sm: 'none' },
+    position: 'fixed',
+    top: '10px',
+    left: '10px',
+    zIndex: 1100,
+  };
+
   const menuItems = [
-    { name: 'Профиль', icon: <AccountCircleIcon style={{ fontSize: '20px', color: '#080733' }} />, key: 'profile' },
-    { name: 'Мои изображения', icon: <ImageIcon style={{ fontSize: '20px', color: '#080733' }} />, key: 'images' },
-    { name: 'Поиск по названию', icon: <SearchIcon style={{ fontSize: '20px', color: '#080733' }} />, key: 'search' },
-    { name: 'Последний', icon: <HistoryIcon style={{ fontSize: '20px', color: '#080733' }} />, key: 'recent' },
-    { name: 'Обновлять', icon: <RefreshIcon style={{ fontSize: '20px', color: '#080733' }} />, key: 'update' },
-    { name: 'Мои шаблоны', icon: <BookmarkIcon style={{ fontSize: '20px', color: '#080733' }} />, key: 'templates' },
-    { name: 'Мои потоки', icon: <StreamIcon style={{ fontSize: '20px', color: '#080733' }} />, key: 'streams' },
-    { name: 'Мои голоса', icon: <ThumbUpIcon style={{ fontSize: '20px', color: '#080733' }} />, key: 'votes' },
-    { name: 'Мои комментарии', icon: <CommentIcon style={{ fontSize: '20px', color: '#080733' }} />, key: 'comments' },
-    { name: 'Лучшие пользователи', icon: <StarIcon style={{ fontSize: '20px', color: '#080733' }} />, key: 'top-users' },
-    { name: 'Сообщения', icon: <MessageIcon style={{ fontSize: '20px', color: '#080733' }} />, key: 'messages' },
-    { name: 'Уведомления', icon: <NotificationsIcon style={{ fontSize: '20px', color: '#080733' }} />, key: 'notifications' },
-    { name: 'Настройки', icon: <SettingsIcon style={{ fontSize: '20px', color: '#080733' }} />, key: 'settings' },
+    { name: 'Profile', icon: <AccountCircleIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'profile' },
+    { name: 'My Images', icon: <ImageIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'images' },
+    { name: 'Update', icon: <RefreshIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'update' },
+    { name: 'My Templates', icon: <BookmarkIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'templates' },
+    { name: 'My Streams', icon: <StreamIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'streams' },
+    { name: 'My Votes', icon: <ThumbUpIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'votes' },
+    { name: 'My Comments', icon: <CommentIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'comments' },
+    { name: 'Top Users', icon: <StarIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'top-users' },
+    { name: 'Messages', icon: <MessageIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'messages' },
+    { name: 'Notifications', icon: <NotificationsIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'notifications' },
+    { name: 'Settings', icon: <SettingsIcon sx={{ fontSize: '20px', color: '#080733' }} />, key: 'settings' },
   ];
 
   const renderContent = () => {
@@ -143,85 +159,73 @@ const MemeGallery = () => {
       case 'images':
         return (
           <>
-            <h2 style={contentTitleStyle}>Мои изображения</h2>
-            <p style={contentTextStyle}>Список ваших сохраненных изображений.</p>
+            <Typography variant="h2" sx={contentTitleStyle}>My Images</Typography>
+            <Typography sx={contentTextStyle}>List of your saved images.</Typography>
           </>
         );
-      case 'search':
-        return (
-          <>
-            <h2 style={contentTitleStyle}>Поиск по названию</h2>
-            <p style={contentTextStyle}>Введите название для поиска мемов.</p>
-          </>
-        );
-      case 'recent':
-        return (
-          <>
-            <h2 style={contentTitleStyle}>Последний</h2>
-            <p style={contentTextStyle}>Ваши последние действия.</p>
-          </>
-        );
+   
+   
       case 'update':
         return (
           <>
-            <h2 style={contentTitleStyle}>Обновлять</h2>
-            <p style={contentTextStyle}>Обновите ваши мемы.</p>
+            <Typography variant="h2" sx={contentTitleStyle}>Update</Typography>
+            <Typography sx={contentTextStyle}>Update your memes.</Typography>
           </>
         );
       case 'templates':
         return (
           <>
-            <h2 style={contentTitleStyle}>Мои шаблоны</h2>
-            <p style={contentTextStyle}>Список ваших шаблонов.</p>
+            <Typography variant="h2" sx={contentTitleStyle}>My Templates</Typography>
+            <Typography sx={contentTextStyle}>List of your templates.</Typography>
           </>
         );
       case 'streams':
         return (
           <>
-            <h2 style={contentTitleStyle}>Мои потоки</h2>
-            <p style={contentTextStyle}>Ваши потоки активности.</p>
+            <Typography variant="h2" sx={contentTitleStyle}>My Streams</Typography>
+            <Typography sx={contentTextStyle}>Your activity streams.</Typography>
           </>
         );
       case 'votes':
         return (
           <>
-            <h2 style={contentTitleStyle}>Мои голоса</h2>
-            <p style={contentTextStyle}>Ваши голоса за мемы.</p>
+            <Typography variant="h2" sx={contentTitleStyle}>My Votes</Typography>
+            <Typography sx={contentTextStyle}>Your votes for memes.</Typography>
           </>
         );
       case 'comments':
         return (
           <>
-            <h2 style={contentTitleStyle}>Мои комментарии</h2>
-            <p style={contentTextStyle}>Ваши комментарии к мемам.</p>
+            <Typography variant="h2" sx={contentTitleStyle}>My Comments</Typography>
+            <Typography sx={contentTextStyle}>Your comments on memes.</Typography>
           </>
         );
       case 'top-users':
         return (
           <>
-            <h2 style={contentTitleStyle}>Лучшие пользователи</h2>
-            <p style={contentTextStyle}>Рейтинг лучших пользователей.</p>
+            <Typography variant="h2" sx={contentTitleStyle}>Top Users</Typography>
+            <Typography sx={contentTextStyle}>Ranking of top users.</Typography>
           </>
         );
       case 'messages':
         return (
           <>
-            <h2 style={contentTitleStyle}>Сообщения</h2>
-            <p style={contentTextStyle}>Ваши сообщения.</p>
+            <Typography variant="h2" sx={contentTitleStyle}>Messages</Typography>
+            <Typography sx={contentTextStyle}>Your messages.</Typography>
           </>
         );
       case 'notifications':
         return (
           <>
-            <h2 style={contentTitleStyle}>Уведомления</h2>
-            <p style={contentTextStyle}>Ваши уведомления.</p>
+            <Typography variant="h2" sx={contentTitleStyle}>Notifications</Typography>
+            <Typography sx={contentTextStyle}>Your notifications.</Typography>
           </>
         );
       case 'settings':
         return (
           <>
-            <h2 style={contentTitleStyle}>Настройки</h2>
-            <p style={contentTextStyle}>Настройте ваш профиль.</p>
+            <Typography variant="h2" sx={contentTitleStyle}>Settings</Typography>
+            <Typography sx={contentTextStyle}>Configure your profile.</Typography>
           </>
         );
       default:
@@ -230,15 +234,21 @@ const MemeGallery = () => {
   };
 
   return (
-    <div style={containerStyle}>
-      {/* Левая боковая панель */}
-      <div style={sidebarStyle}>
-        <h3 style={sidebarTitleStyle}>Профиль</h3>
-        <div style={buttonContainerStyle}>
+    <Box sx={containerStyle}>
+      {/* Hamburger Menu for Mobile */}
+      <IconButton sx={hamburgerStyle} onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+        {isSidebarOpen ? <CloseIcon sx={{ color: '#080733' }} /> : <MenuIcon sx={{ color: '#080733' }} />}
+      </IconButton>
+
+      {/* Sidebar */}
+      <Box sx={sidebarStyle}>
+        <Typography variant="h3" sx={sidebarTitleStyle}>Profile</Typography>
+        <Box sx={buttonContainerStyle}>
+
           {menuItems.map((item, index) => (
-            <button
+            <Button
               key={index}
-              style={
+              sx={
                 activeMenuItem === item.key
                   ? buttonActiveStyle
                   : activeButton === index
@@ -247,20 +257,21 @@ const MemeGallery = () => {
               }
               onMouseEnter={() => setActiveButton(index)}
               onMouseLeave={() => setActiveButton(null)}
-              onClick={() => setActiveMenuItem(item.key)}
+              onClick={() => {
+                setActiveMenuItem(item.key);
+                setIsSidebarOpen(false); // Close sidebar on mobile
+              }}
             >
               {item.icon}
               {item.name}
-            </button>
+            </Button>
           ))}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
-      {/* Основное содержимое */}
-      <div style={contentStyle}>
-        {renderContent()}
-      </div>
-    </div>
+      {/* Main Content */}
+      <Box sx={contentStyle}>{renderContent()}</Box>
+    </Box>
   );
 };
 
