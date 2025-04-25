@@ -169,7 +169,7 @@ const Editor = () => {
     const token = localStorage.getItem('token');
     if (!token) {
       showNotification('Please log in to publish');
-      navigate('/');
+      navigate('/gallery');
       return;
     }
 
@@ -200,7 +200,7 @@ const Editor = () => {
         if (response.status === 401) {
           showNotification('Session expired. Please log in');
           localStorage.removeItem('token');
-          navigate('/');
+          navigate('/gallery');
         } else {
           showNotification(data.message || 'Failed to publish');
         }
@@ -323,13 +323,15 @@ const Editor = () => {
 
   return (
     <Container
-      maxWidth="md"
+      // maxWidth="md"
       sx={{
         py: 1.5,
         minHeight: 'auto',
         transition: 'background-color 0.3s ease',
         display: 'flex',
         marginTop: '50px',
+        minHeight: '80vh', // Увеличивает высоту элемента
+
       }}
     >
       <Paper
@@ -337,12 +339,13 @@ const Editor = () => {
         sx={{
           p: 1.5,
           width: '100%',
-          background: 'linear-gradient(135deg,rgb(195, 203, 233) 0%,rgb(216, 230, 244) 33%,rgb(190, 214, 252) 66%,rgb(161, 176, 231)  100%)',
-                    borderRadius: '6px',
+          background: 'linear-gradient(135deg, rgb(180, 198, 231) 0%, rgb(200, 220, 250) 25%, rgb(170, 200, 240) 50%, rgb(140, 170, 220) 75%, rgb(110, 140, 200) 100%)',
+          borderRadius: '6px',
           boxShadow: '0 3px 10px rgba(0, 0, 0, 0.08)',
           transition: 'background-color 0.3s ease',
         }}
       >
+
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
           <Typography
             variant="h5"
