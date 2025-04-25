@@ -339,12 +339,15 @@ const Editor = () => {
         sx={{
           p: 1.5,
           width: '100%',
-          background: 'linear-gradient(135deg, rgb(180, 198, 231) 0%, rgb(200, 220, 250) 25%, rgb(170, 200, 240) 50%, rgb(140, 170, 220) 75%, rgb(110, 140, 200) 100%)',
+          background: 'linear-gradient(135deg, #e6e8f0 0%, #f0f2f8 33%,rgba(208, 220, 255, 0.66) 66%,rgb(199, 207, 241) 100%)',
           borderRadius: '6px',
-          boxShadow: '0 3px 10px rgba(0, 0, 0, 0.08)',
+          boxShadow: '0 3px 10px rgba(0, 0, 0, 0.05)',
           transition: 'background-color 0.3s ease',
         }}
       >
+
+
+
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
           <Typography
