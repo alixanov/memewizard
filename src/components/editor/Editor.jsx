@@ -72,7 +72,7 @@ const Editor = () => {
       text: '#ffffff',
       secondaryText: '#b0b0b0',
       background: '#2d3436',
-      paper: '#1e272e',
+      paper: 'linear-gradient(135deg, #e6e8f0 0%, #f8f9fa 33%, #c3cfe2 66%, #a1a8b9 100%)',
       border: '#3d4a54',
     }
     : {
@@ -327,7 +327,6 @@ const Editor = () => {
       sx={{
         py: 1.5,
         minHeight: 'auto',
-        bgcolor: darkMode ? '#121212' : '#f5f6fa',
         transition: 'background-color 0.3s ease',
         display: 'flex',
         marginTop: '50px',
@@ -338,8 +337,8 @@ const Editor = () => {
         sx={{
           p: 1.5,
           width: '100%',
-          bgcolor: colorScheme.paper,
-          borderRadius: '6px',
+          background: 'linear-gradient(135deg,rgb(195, 203, 233) 0%,rgb(216, 230, 244) 33%, #c3cfe2 66%,rgba(22, 24, 27, 0.88) 100%)',
+                    borderRadius: '6px',
           boxShadow: '0 3px 10px rgba(0, 0, 0, 0.08)',
           transition: 'background-color 0.3s ease',
         }}
