@@ -28,6 +28,12 @@ import PublishIcon from '@mui/icons-material/Publish';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Draggable from 'react-draggable';
 
+// Configure API base URL
+const API_BASE_URL =
+  process.env.NODE_ENV === 'production'
+    ? 'https://memewizard-server.vercel.app'
+    : 'http://localhost:5000';
+
 const Editor = () => {
   const [image, setImage] = useState(null);
   const [texts, setTexts] = useState([
@@ -53,8 +59,8 @@ const Editor = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishSuccess, setPublishSuccess] = useState(false);
-  const [expanded, setExpanded] = useState(false);
-  const [notification, setNotification] = useState({ open: false, message: '' });
+  const [expanded, setExpanded] = useState(false); // Added missing state
+  const [notification, setNotification] = useState({ open: false, message: '', type: 'error' });
   const canvasRef = useRef(null);
   const textRefs = useRef({});
   const navigate = useNavigate();
@@ -79,9 +85,9 @@ const Editor = () => {
       border: '#dfe6e9',
     };
 
-  const showNotification = (message) => {
-    setNotification({ open: true, message });
-    setTimeout(() => setNotification({ open: false, message: '' }), 3000);
+  const showNotification = (message, type = 'error') => {
+    setNotification({ open: true, message, type });
+    setTimeout(() => setNotification({ open: false, message: '', type: 'error' }), 3000);
   };
 
   const handleImageUpload = (e) => {
@@ -172,7 +178,7 @@ const Editor = () => {
     const imageData = canvas.toDataURL('image/png');
 
     try {
-      const response = await fetch('https://memewizard-server.vercel.app/api/memes/publish', {
+      const response = await fetch(`${API_BASE_URL}/api/memes/publish`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -184,6 +190,7 @@ const Editor = () => {
       const data = await response.json();
       if (response.ok) {
         setPublishSuccess(true);
+        showNotification('Meme published successfully', 'success');
         setTimeout(() => {
           setPublishSuccess(false);
           setIsPublishing(false);
@@ -199,6 +206,7 @@ const Editor = () => {
         }
       }
     } catch (err) {
+      console.error('Publish error:', err);
       setIsPublishing(false);
       showNotification('Server error');
     }
@@ -847,7 +855,7 @@ const Editor = () => {
         message={notification.message}
         sx={{
           '& .MuiSnackbarContent-root': {
-            bgcolor: colorScheme.primary,
+            bgcolor: notification.type === 'success' ? '#2e7d32' : colorScheme.primary,
             color: colorScheme.secondary,
             fontSize: '12px',
             borderRadius: '5px',

@@ -1,32 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Box,
   Typography,
-  Button,
   TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
+  Button,
   Paper,
+  Avatar,
   IconButton,
-  Grid,
-  Slider,
-  Switch,
-  FormControlLabel,
-  Divider,
-  Collapse,
   Snackbar,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import DownloadIcon from '@mui/icons-material/Download';
-import PublishIcon from '@mui/icons-material/Publish';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import Draggable from 'react-draggable';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 // Configure API base URL
 const API_BASE_URL =
@@ -34,837 +20,363 @@ const API_BASE_URL =
     ? 'https://memewizard-server.vercel.app'
     : 'http://localhost:5000';
 
-const Editor = () => {
-  const [image, setImage] = useState(null);
-  const [texts, setTexts] = useState([
-    {
-      id: 1,
-      text: 'Your text here',
-      position: { x: 50, y: 50 },
-      styles: {
-        fontSize: 24,
-        fontFamily: 'Impact',
-        color: '#ffffff',
-        textShadow: '2px 2px 4px #000000',
-        fontWeight: 'bold',
-        fontStyle: 'normal',
-        textPosition: 'center',
-        strokeColor: '#000000',
-        strokeWidth: 0,
-        opacity: 1,
-      },
-    },
-  ]);
-  const [activeTextId, setActiveTextId] = useState(1);
-  const [darkMode, setDarkMode] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [publishSuccess, setPublishSuccess] = useState(false);
-  const [expanded, setExpanded] = useState(false); // Added missing state
+const Profile = () => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    name: '',
+  });
+  const [currentUser, setCurrentUser] = useState(null);
   const [notification, setNotification] = useState({ open: false, message: '', type: 'error' });
-  const canvasRef = useRef(null);
-  const textRefs = useRef({});
   const navigate = useNavigate();
 
-  const colorScheme = darkMode
-    ? {
-      primary: '#080733',
-      secondary: '#ffffff',
-      text: '#ffffff',
-      secondaryText: '#b0b0b0',
-      background: '#2d3436',
-      paper: '#1e272e',
-      border: '#3d4a54',
-    }
-    : {
-      primary: '#080733',
-      secondary: '#ffffff',
-      text: '#2d3436',
-      secondaryText: '#636e72',
-      background: '#ffffff',
-      paper: '#f5f6fa',
-      border: '#dfe6e9',
-    };
+  const colorScheme = {
+    primary: '#080733',
+    secondary: '#ffffff',
+    text: '#080733',
+    secondaryText: '#555',
+    background: '#ffffff',
+  };
 
   const showNotification = (message, type = 'error') => {
     setNotification({ open: true, message, type });
     setTimeout(() => setNotification({ open: false, message: '', type: 'error' }), 3000);
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file && ['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
-      const reader = new FileReader();
-      reader.onload = () => setImage(reader.result);
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleTextChange = (id, value) => {
-    setTexts((prev) => prev.map((t) => (t.id === id ? { ...t, text: value } : t)));
-  };
-
-  const handleStyleChange = (id, key, value) => {
-    setTexts((prev) =>
-      prev.map((t) => {
-        if (t.id === id) {
-          const updatedText = { ...t, styles: { ...t.styles, [key]: value } };
-          if (key === 'textPosition' && canvasRef.current) {
-            const { position } = calculateTextPosition(updatedText.text, updatedText.styles, canvasRef.current);
-            updatedText.position = position;
-          }
-          return updatedText;
-        }
-        return t;
-      })
-    );
-  };
-
-  const handleDrag = (id, e, data) => {
-    setTexts((prev) => prev.map((t) => (t.id === id ? { ...t, position: { x: data.x, y: data.y } } : t)));
-  };
-
-  const addText = () => {
-    const newId = texts.length > 0 ? Math.max(...texts.map((t) => t.id)) + 1 : 1;
-    const newText = {
-      id: newId,
-      text: 'New text',
-      position: { x: 50, y: 50 },
-      styles: {
-        fontSize: 24,
-        fontFamily: 'Impact',
-        color: '#ffffff',
-        textShadow: '2px 2px 4px #000000',
-        fontWeight: 'bold',
-        fontStyle: 'normal',
-        textPosition: 'center',
-        strokeColor: '#000000',
-        strokeWidth: 0,
-        opacity: 1,
-      },
-    };
-    setTexts((prev) => [...prev, newText]);
-    setActiveTextId(newId);
-  };
-
-  const deleteText = (id) => {
-    setTexts((prev) => prev.filter((t) => t.id !== id));
-    if (activeTextId === id) {
-      setActiveTextId(texts[0]?.id || null);
-    }
-  };
-
-  const handleTextClick = (id) => {
-    setActiveTextId(id);
-  };
-
-  const handleSave = () => {
-    const canvas = canvasRef.current;
-    const link = document.createElement('a');
-    link.download = 'meme.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  };
-
-  const handlePublish = async () => {
+  useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token) {
-      showNotification('Please log in to publish');
-      navigate('/');
-      return;
+    if (token) {
+      fetchProfile(token);
     }
+  }, []);
 
-    setIsPublishing(true);
-    const canvas = canvasRef.current;
-    const imageData = canvas.toDataURL('image/png');
-
+  const fetchProfile = async (token) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/memes/publish`, {
-        method: 'POST',
+      const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ image: imageData }),
       });
-
       const data = await response.json();
       if (response.ok) {
-        setPublishSuccess(true);
-        showNotification('Meme published successfully', 'success');
-        setTimeout(() => {
-          setPublishSuccess(false);
-          setIsPublishing(false);
-        }, 2000);
+        setCurrentUser(data);
       } else {
-        setIsPublishing(false);
-        if (response.status === 401) {
-          showNotification('Session expired. Please log in');
-          localStorage.removeItem('token');
-          navigate('/');
-        } else {
-          showNotification(data.message || 'Failed to publish');
-        }
+        localStorage.removeItem('token');
+        showNotification(data.message || 'Failed to fetch profile');
       }
     } catch (err) {
-      console.error('Publish error:', err);
-      setIsPublishing(false);
+      localStorage.removeItem('token');
       showNotification('Server error');
     }
   };
 
-  const calculateTextPosition = (text, styles, canvas) => {
-    const ctx = canvas.getContext('2d');
-    ctx.font = `${styles.fontStyle === 'italic' ? 'italic ' : ''}${styles.fontWeight === 'bold' ? 'bold ' : ''}${styles.fontSize
-      }px ${styles.fontFamily}`;
-    const lines = text.split('\n');
-    const lineHeight = styles.fontSize * 1.2;
-    const textWidth = Math.max(...lines.map((line) => ctx.measureText(line).width));
-    const textHeight = lines.length * lineHeight;
-
-    let x, y;
-    switch (styles.textPosition) {
-      case 'start':
-        x = 5;
-        y = canvas.height / 2;
-        break;
-      case 'end':
-        x = canvas.width - textWidth - 5;
-        y = canvas.height / 2;
-        break;
-      case 'top':
-        x = canvas.width / 2;
-        y = styles.fontSize + 5;
-        break;
-      case 'bottom':
-        x = canvas.width / 2;
-        y = canvas.height - textHeight - 5;
-        break;
-      case 'center':
-        x = canvas.width / 2;
-        y = canvas.height / 2;
-        break;
-      default:
-        x = canvas.width / 2;
-        y = canvas.height / 2;
-    }
-
-    return { position: { x, y }, textWidth, textHeight };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  useEffect(() => {
-    if (image && canvasRef.current) {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      img.src = image;
-      img.onload = () => {
-        const maxWidth = 350;
-        const maxHeight = 200;
-        let width = img.width;
-        let height = img.height;
-        if (width > maxWidth || height > maxHeight) {
-          const ratio = Math.min(maxWidth / width, maxHeight / height);
-          width = width * ratio;
-          height = height * ratio;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const url = isLogin
+      ? `${API_BASE_URL}/api/auth/login`
+      : `${API_BASE_URL}/api/auth/register`;
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        if (isLogin) {
+          localStorage.setItem('token', data.token);
+          setCurrentUser(data.user);
+          showNotification('Logged in successfully', 'success');
+          navigate('/gallery');
+        } else {
+          setIsLogin(true);
+          setFormData({ email: '', password: '', name: '' });
+          showNotification('Registration successful, please log in', 'success');
         }
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(img, 0, 0, width, height);
-
-        texts.forEach(({ text, position, styles }) => {
-          ctx.font = `${styles.fontStyle === 'italic' ? 'italic ' : ''}${styles.fontWeight === 'bold' ? 'bold ' : ''}${styles.fontSize
-            }px ${styles.fontFamily}`;
-          ctx.fillStyle = styles.color;
-          ctx.globalAlpha = styles.opacity;
-
-          ctx.textAlign =
-            styles.textPosition === 'center' || styles.textPosition === 'top' || styles.textPosition === 'bottom'
-              ? 'center'
-              : styles.textPosition === 'start'
-                ? 'left'
-                : 'right';
-
-          if (styles.textShadow !== 'none') {
-            const [offsetX, offsetY, blur, color] = styles.textShadow.split(' ');
-            ctx.shadowOffsetX = parseFloat(offsetX);
-            ctx.shadowOffsetY = parseFloat(offsetY);
-            ctx.shadowBlur = parseFloat(blur);
-            ctx.shadowColor = color;
-          } else {
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
-            ctx.shadowBlur = 0;
-            ctx.shadowColor = 'transparent';
-          }
-
-          if (styles.strokeWidth > 0) {
-            ctx.strokeStyle = styles.strokeColor;
-            ctx.lineWidth = styles.strokeWidth;
-            const lines = text.split('\n');
-            const lineHeight = styles.fontSize * 1.2;
-            lines.forEach((line, index) => {
-              ctx.strokeText(line, position.x, position.y + index * lineHeight);
-            });
-          }
-
-          const lines = text.split('\n');
-          const lineHeight = styles.fontSize * 1.2;
-          lines.forEach((line, index) => {
-            ctx.fillText(line, position.x, position.y + index * lineHeight);
-          });
-
-          ctx.globalAlpha = 1;
-        });
-      };
+      } else {
+        showNotification(data.message || 'Authentication failed');
+      }
+    } catch (err) {
+      showNotification('Server error');
     }
-  }, [image, texts]);
+  };
 
-  const activeText = texts.find((t) => t.id === activeTextId) || texts[0];
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setCurrentUser(null);
+    setFormData({ email: '', password: '', name: '' });
+    showNotification('Logged out successfully', 'success');
+    navigate('/gallery');
+  };
+
+  const toggleAuthMode = () => {
+    setIsLogin(!isLogin);
+    setNotification({ open: false, message: '', type: 'error' });
+    setFormData({ email: '', password: '', name: '' });
+  };
+
+  const handleCreateMeme = () => {
+    navigate('/editor');
+  };
+
+  if (currentUser) {
+    return (
+      <Container maxWidth="xs" sx={{ mt: 4, bgcolor: '#f8f9fa', minHeight: '70vh' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+          <Typography
+            variant="h5"
+            sx={{ color: colorScheme.text, fontWeight: 600, fontSize: '24px', textAlign: 'center', width: '100%' }}
+          >
+            Personal Account
+          </Typography>
+          <IconButton
+            onClick={handleLogout}
+            sx={{
+              color: colorScheme.primary,
+              '&:hover': { bgcolor: 'rgba(8, 7, 51, 0.1)' },
+            }}
+            aria-label="Logout"
+          >
+            <ExitToAppIcon />
+          </IconButton>
+        </Box>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+          <Avatar
+            sx={{
+              bgcolor: colorScheme.primary,
+              width: 48,
+              height: 48,
+              fontSize: '1.5rem',
+            }}
+          >
+            {currentUser.name.charAt(0).toUpperCase()}
+          </Avatar>
+          <Typography variant="h6" sx={{ color: colorScheme.text, fontWeight: 500, fontSize: '20px' }}>
+            {currentUser.name}
+          </Typography>
+          <Typography variant="body2" sx={{ color: colorScheme.secondaryText, fontSize: '14px' }}>
+            {currentUser.email}
+          </Typography>
+          <Button
+            variant="outlined"
+            startIcon={<AddCircleOutlineIcon sx={{ fontSize: '20px' }} />}
+            onClick={handleCreateMeme}
+            sx={{
+              mt: 1,
+              py: 1,
+              px: 2,
+              color: colorScheme.primary,
+              borderColor: colorScheme.primary,
+              bgcolor: colorScheme.secondary,
+              fontSize: '16px',
+              fontWeight: 500,
+              textTransform: 'none',
+              borderRadius: '4px',
+              '&:hover': {
+                bgcolor: '#f0f1f5',
+                borderColor: colorScheme.primary,
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+              },
+            }}
+          >
+            Create Meme
+          </Button>
+        </Box>
+        <Snackbar
+          open={notification.open}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          message={notification.message}
+          sx={{
+            '& .MuiSnackbarContent-root': {
+              bgcolor: notification.type === 'success' ? '#2e7d32' : colorScheme.primary,
+              color: colorScheme.secondary,
+              fontSize: '12px',
+              borderRadius: '5px',
+              padding: '6px 12px',
+            },
+          }}
+        />
+      </Container>
+    );
+  }
 
   return (
     <Container
-      maxWidth="md"
+      maxWidth="xs"
       sx={{
-        py: 1.5,
-        minHeight: 'auto',
-        bgcolor: darkMode ? '#121212' : '#f5f6fa',
-        transition: 'background-color 0.3s ease',
+        minHeight: '90vh',
         display: 'flex',
-        marginTop: '50px',
+        justifyContent: 'center',
+        alignItems: 'center',
+        bgcolor: '#f8f9fa',
       }}
     >
-      <Paper
-        elevation={2}
-        sx={{
-          p: 1.5,
-          width: '100%',
-          bgcolor: colorScheme.paper,
-          borderRadius: '6px',
-          boxShadow: '0 3px 10px rgba(0, 0, 0, 0.08)',
-          transition: 'background-color 0.3s ease',
-        }}
-      >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-          <Typography
-            variant="h5"
+      <Paper elevation={0} sx={{ p: 2, bgcolor: colorScheme.background, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+        <Typography
+          variant="h5"
+          sx={{
+            color: colorScheme.text,
+            fontWeight: 600,
+            mb: 2,
+            textAlign: 'center',
+            fontSize: '24px',
+          }}
+        >
+          {isLogin ? 'Login' : 'Register'}
+        </Typography>
+        <form onSubmit={handleSubmit}>
+          {!isLogin && (
+            <TextField
+              fullWidth
+              label="Name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              size="small"
+              sx={{ mb: 2 }}
+              InputProps={{
+                style: { color: colorScheme.text, borderColor: '#e0e0e0' },
+              }}
+              InputLabelProps={{
+                style: { color: colorScheme.secondaryText },
+              }}
+              slotProps={{
+                input: {
+                  sx: {
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e0e0e0' },
+                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#e0e0e0' },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#e0e0e0',
+                      boxShadow: 'none',
+                    },
+                  },
+                },
+              }}
+            />
+          )}
+          <TextField
+            fullWidth
+            label="Email"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            size="small"
+            sx={{ mb: 2 }}
+            InputProps={{
+              style: { color: colorScheme.text, borderColor: '#e0e0e0' },
+            }}
+            InputLabelProps={{
+              style: { color: colorScheme.secondaryText },
+            }}
+            slotProps={{
+              input: {
+                sx: {
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e0e0e0' },
+                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#e0e0e0' },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#e0e0e0',
+                    boxShadow: 'none',
+                  },
+                },
+              },
+            }}
+          />
+          <TextField
+            fullWidth
+            label="Password"
+            name="password"
+            type="password"
+            value={formData.password}
+            onChange={handleChange}
+            size="small"
+            sx={{ mb: 2 }}
+            InputProps={{
+              style: { color: colorScheme.text, borderColor: '#e0e0e0' },
+            }}
+            InputLabelProps={{
+              style: { color: colorScheme.secondaryText },
+            }}
+            slotProps={{
+              input: {
+                sx: {
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e0e0e0' },
+                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#e0e0e0' },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#e0e0e0',
+                    boxShadow: 'none',
+                  },
+                },
+              },
+            }}
+          />
+          <Button
+            fullWidth
+            variant="contained"
+            type="submit"
             sx={{
-              color: colorScheme.primary,
-              fontWeight: 700,
-              fontSize: { xs: '18px', sm: '22px' },
+              py: 1,
+              bgcolor: colorScheme.primary,
+              color: colorScheme.secondary,
+              fontSize: '16px',
+              fontWeight: 500,
+              textTransform: 'none',
+              '&:hover': { bgcolor: 'rgba(8, 7, 51, 0.8)' },
             }}
           >
-            Meme Creator
-          </Typography>
-        </Box>
-
-        <Divider sx={{ borderColor: colorScheme.border, mb: 1.5 }} />
-
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 1.5 }}>
-          {/* Left panel - Controls */}
-          <Box sx={{ width: { xs: '100%', md: '250px' } }}>
-            <Box sx={{ mb: 1.5 }}>
-              <Typography variant="subtitle2" sx={{ color: colorScheme.text, mb: 0.5, fontWeight: 600, fontSize: '11px' }}>
-                Image
-              </Typography>
-              <Button
-                variant="contained"
-                component="label"
-                startIcon={<CloudUploadIcon />}
-                fullWidth
-                sx={{
-                  py: 0.8,
-                  bgcolor: colorScheme.primary,
-                  color: colorScheme.secondary,
-                  '&:hover': { bgcolor: darkMode ? '#1a1a5e' : '#1a1a5e' },
-                  borderRadius: '5px',
-                  textTransform: 'none',
-                  fontWeight: 500,
-                  fontSize: '11px',
-                }}
-              >
-                Upload Image
-                <input type="file" accept=".jpg,.png,.gif" hidden onChange={handleImageUpload} />
-              </Button>
-            </Box>
-
-            <Box sx={{ mb: 1.5 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                <Typography variant="subtitle2" sx={{ color: colorScheme.text, fontWeight: 600, fontSize: '11px' }}>
-                  Text Elements
-                </Typography>
-                <Button
-                  variant="outlined"
-                  onClick={addText}
-                  startIcon={<AddIcon />}
-                  size="small"
-                  sx={{
-                    color: colorScheme.primary,
-                    borderColor: colorScheme.primary,
-                    '&:hover': { borderColor: colorScheme.primary, bgcolor: 'rgba(8, 7, 51, 0.1)' },
-                    borderRadius: '5px',
-                    textTransform: 'none',
-                    fontSize: '11px',
-                  }}
-                >
-                  Add
-                </Button>
-              </Box>
-
-              {texts.length > 0 && (
-                <Box sx={{ maxHeight: '120px', overflowY: 'auto', mb: 0.5 }}>
-                  {texts.map((text) => (
-                    <Paper
-                      key={text.id}
-                      elevation={0}
-                      onClick={() => handleTextClick(text.id)}
-                      sx={{
-                        p: 0.8,
-                        mb: 0.3,
-                        bgcolor: activeTextId === text.id ? (darkMode ? '#3d4a54' : '#e6e8fa') : darkMode ? '#2d3436' : '#f8f9fa',
-                        borderRadius: '5px',
-                        border: `1px solid ${activeTextId === text.id ? colorScheme.primary : colorScheme.border}`,
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        '&:hover': { borderColor: colorScheme.primary },
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            color: colorScheme.text,
-                            fontWeight: activeTextId === text.id ? 600 : 400,
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            fontSize: '11px',
-                          }}
-                        >
-                          {text.text || 'Empty text'}
-                        </Typography>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteText(text.id);
-                          }}
-                          sx={{ color: activeTextId === text.id ? colorScheme.primary : colorScheme.secondaryText }}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Box>
-                    </Paper>
-                  ))}
-                </Box>
-              )}
-            </Box>
-
-            {activeText && (
-              <Box>
-                <Typography variant="subtitle2" sx={{ color: colorScheme.text, mb: 0.5, fontWeight: 600, fontSize: '11px' }}>
-                  Text Settings
-                </Typography>
-
-                <TextField
-                  fullWidth
-                  label="Text Content"
-                  value={activeText?.text || ''}
-                  onChange={(e) => handleTextChange(activeTextId, e.target.value)}
-                  size="small"
-                  sx={{
-                    mb: 1,
-                    '& .MuiOutlinedInput-root': {
-                      '& fieldset': { borderColor: colorScheme.border },
-                      '&:hover fieldset': { borderColor: colorScheme.primary },
-                      '&.Mui-focused fieldset': { borderColor: colorScheme.primary },
-                      borderRadius: '5px',
-                      fontSize: '11px',
-                    },
-                    '& .MuiInputBase-input': { color: colorScheme.text, fontSize: '11px', padding: '5px 8px' },
-                    '& .MuiInputLabel-root': {
-                      color: colorScheme.secondaryText,
-                      fontSize: '12px',
-                    },
-                    '& .MuiInputLabel-root.Mui-focused': {
-                      color: colorScheme.primary,
-                    },
-                  }}
-                />
-
-                <Grid container spacing={0.5}>
-                  <Grid item xs={6}>
-                    <FormControl fullWidth size="small">
-                      <InputLabel sx={{ color: colorScheme.secondaryText, fontSize: '12px' }}>Font</InputLabel>
-                      <Select
-                        value={activeText?.styles.fontFamily || 'Impact'}
-                        onChange={(e) => handleStyleChange(activeTextId, 'fontFamily', e.target.value)}
-                        label="Font"
-                        sx={{
-                          color: colorScheme.text,
-                          fontSize: '11px',
-                          '& .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.border },
-                          '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
-                          borderRadius: '5px',
-                        }}
-                      >
-                        <MenuItem value="Impact">Impact</MenuItem>
-                        <MenuItem value="Arial">Arial</MenuItem>
-                        <MenuItem value="Roboto">Roboto</MenuItem>
-                        <MenuItem value="Comic Sans MS">Comic Sans</MenuItem>
-                        <MenuItem value="Times New Roman">Times New Roman</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <FormControl fullWidth size="small">
-                      <InputLabel sx={{ color: colorScheme.secondaryText, fontSize: '12px' }}>Position</InputLabel>
-                      <Select
-                        value={activeText?.styles.textPosition || 'center'}
-                        onChange={(e) => handleStyleChange(activeTextId, 'textPosition', e.target.value)}
-                        label="Position"
-                        sx={{
-                          color: colorScheme.text,
-                          fontSize: '11px',
-                          '& .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.border },
-                          '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
-                          borderRadius: '5px',
-                        }}
-                      >
-                        <MenuItem value="start">Left</MenuItem>
-                        <MenuItem value="center">Center</MenuItem>
-                        <MenuItem value="end">Right</MenuItem>
-                        <MenuItem value="top">Top</MenuItem>
-                        <MenuItem value="bottom">Bottom</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                </Grid>
-
-                <Box sx={{ mt: 1, mb: 1 }}>
-                  <Typography variant="body2" sx={{ color: colorScheme.text, mb: 0.3, fontSize: '11px' }}>
-                    Font Size: {activeText?.styles.fontSize || 24}px
-                  </Typography>
-                  <Slider
-                    value={activeText?.styles.fontSize || 24}
-                    onChange={(e, value) => handleStyleChange(activeTextId, 'fontSize', value)}
-                    min={12}
-                    max={72}
-                    step={2}
-                    sx={{
-                      color: colorScheme.primary,
-                      height: 3,
-                      '& .MuiSlider-thumb': {
-                        width: 10,
-                        height: 10,
-                        '&:hover, &.Mui-focusVisible': {
-                          boxShadow: `0px 0px 0px 5px ${darkMode ? 'rgba(8, 7, 51, 0.16)' : 'rgba(8, 7, 51, 0.16)'}`,
-                        },
-                      },
-                    }}
-                  />
-                </Box>
-
-                <Box sx={{ mb: 1 }}>
-                  <Typography variant="body2" sx={{ color: colorScheme.text, mb: 0.3, fontSize: '11px' }}>
-                    Opacity: {Math.round((activeText?.styles.opacity || 1) * 100)}%
-                  </Typography>
-                  <Slider
-                    value={activeText?.styles.opacity || 1}
-                    onChange={(e, value) => handleStyleChange(activeTextId, 'opacity', value)}
-                    min={0}
-                    max={1}
-                    step={0.1}
-                    sx={{
-                      color: colorScheme.primary,
-                      height: 3,
-                      '& .MuiSlider-thumb': { width: 10, height: 10 },
-                    }}
-                  />
-                </Box>
-
-                <Box sx={{ mb: 1 }}>
-                  <Button
-                    onClick={() => setExpanded(!expanded)}
-                    fullWidth
-                    sx={{
-                      color: colorScheme.primary,
-                      justifyContent: 'space-between',
-                      textTransform: 'none',
-                      fontSize: '11px',
-                      bgcolor: darkMode ? '#3d4a54' : '#e6e8fa',
-                      borderRadius: '5px',
-                      p: 0.8,
-                    }}
-                    endIcon={<ExpandMoreIcon sx={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />}
-                  >
-                    Advanced Settings
-                  </Button>
-                  <Collapse in={expanded}>
-                    <Box sx={{ mt: 1 }}>
-                      <Grid container spacing={0.5}>
-                        <Grid item xs={6}>
-                          <Box>
-                            <Typography variant="body2" sx={{ color: colorScheme.text, mb: 0.3, fontSize: '11px' }}>
-                              Text Color
-                            </Typography>
-                            <TextField
-                              type="color"
-                              value={activeText?.styles.color || '#ffffff'}
-                              onChange={(e) => handleStyleChange(activeTextId, 'color', e.target.value)}
-                              size="small"
-                              fullWidth
-                              sx={{
-                                '& .MuiOutlinedInput-root': {
-                                  height: '28px',
-                                  p: '1px !important',
-                                  bgcolor: colorScheme.background,
-                                  borderRadius: '5px',
-                                },
-                                '& .MuiInputBase-input': {
-                                  p: 0,
-                                  height: '100%',
-                                  cursor: 'pointer',
-                                },
-                              }}
-                            />
-                          </Box>
-                        </Grid>
-                        <Grid item xs={6}>
-                          <Box>
-                            <Typography variant="body2" sx={{ color: colorScheme.text, mb: 0.3, fontSize: '11px' }}>
-                              Stroke Color
-                            </Typography>
-                            <TextField
-                              type="color"
-                              value={activeText?.styles.strokeColor || '#000000'}
-                              onChange={(e) => handleStyleChange(activeTextId, 'strokeColor', e.target.value)}
-                              size="small"
-                              fullWidth
-                              sx={{
-                                '& .MuiOutlinedInput-root': {
-                                  height: '28px',
-                                  p: '1px !important',
-                                  bgcolor: colorScheme.background,
-                                  borderRadius: '5px',
-                                },
-                                '& .MuiInputBase-input': {
-                                  p: 0,
-                                  height: '100%',
-                                  cursor: 'pointer',
-                                },
-                              }}
-                            />
-                          </Box>
-                        </Grid>
-                      </Grid>
-
-                      <Grid container spacing={0.5} sx={{ mt: 0.5 }}>
-                        <Grid item xs={6}>
-                          <FormControl fullWidth size="small">
-                            <InputLabel sx={{ color: colorScheme.secondaryText, fontSize: '12px' }}>
-                              Stroke Width
-                            </InputLabel>
-                            <Select
-                              value={activeText?.styles.strokeWidth || 0}
-                              onChange={(e) => handleStyleChange(activeTextId, 'strokeWidth', e.target.value)}
-                              label="Stroke Width"
-                              sx={{
-                                color: colorScheme.text,
-                                fontSize: '11px',
-                                '& .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.border },
-                                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
-                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
-                                borderRadius: '5px',
-                              }}
-                            >
-                              <MenuItem value={0}>None</MenuItem>
-                              <MenuItem value={1}>1px</MenuItem>
-                              <MenuItem value={2}>2px</MenuItem>
-                              <MenuItem value={3}>3px</MenuItem>
-                            </Select>
-                          </FormControl>
-                        </Grid>
-                        <Grid item xs={6}>
-                          <FormControl fullWidth size="small">
-                            <InputLabel sx={{ color: colorScheme.secondaryText, fontSize: '12px' }}>Shadow</InputLabel>
-                            <Select
-                              value={activeText?.styles.textShadow || '2px 2px 4px #000000'}
-                              onChange={(e) => handleStyleChange(activeTextId, 'textShadow', e.target.value)}
-                              label="Shadow"
-                              sx={{
-                                color: colorScheme.text,
-                                fontSize: '11px',
-                                '& .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.border },
-                                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
-                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
-                                borderRadius: '5px',
-                              }}
-                            >
-                              <MenuItem value="none">None</MenuItem>
-                              <MenuItem value="2px 2px 4px #000000">Black</MenuItem>
-                              <MenuItem value="2px 2px 4px #ffffff">White</MenuItem>
-                              <MenuItem value="0 0 8px #ff00ff">Neon</MenuItem>
-                            </Select>
-                          </FormControl>
-                        </Grid>
-                      </Grid>
-                    </Box>
-                  </Collapse>
-                </Box>
-              </Box>
-            )}
-          </Box>
-
-          {/* Right panel - Canvas */}
-          <Box sx={{ flex: 1 }}>
-            <Box
+            {isLogin ? 'Login' : 'Register'}
+          </Button>
+          <Typography
+            variant="body2"
+            sx={{
+              mt: 1,
+              textAlign: 'center',
+              color: colorScheme.secondaryText,
+              fontSize: '14px',
+            }}
+          >
+            {isLogin ? "Don't have an account?" : 'Already have an account?'}
+            <Button
+              onClick={toggleAuthMode}
               sx={{
-                position: 'relative',
-                border: `1px solid ${colorScheme.border}`,
-                borderRadius: '5px',
-                overflow: 'hidden',
-                minHeight: '150px',
-                maxHeight: '200px',
-                bgcolor: darkMode ? '#1a1a1a' : '#e0e0e0',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                mb: 1.5,
+                color: colorScheme.primary,
+                textTransform: 'none',
+                ml: 0.5,
+                fontSize: '14px',
+                '&:hover': { bgcolor: 'rgba(8, 7, 51, 0.1)' },
               }}
             >
-              {image ? (
-                <>
-                  <canvas
-                    ref={canvasRef}
-                    style={{
-                      display: 'block',
-                      maxWidth: '100%',
-                      maxHeight: '200px',
-                      objectFit: 'contain',
-                    }}
-                  />
-                  {texts.map(({ id, text, position, styles }) => (
-                    <Draggable
-                      key={id}
-                      position={position}
-                      onDrag={(e, data) => handleDrag(id, e, data)}
-                      bounds="parent"
-                      nodeRef={textRefs.current[id] || (textRefs.current[id] = React.createRef())}
-                    >
-                      <Box
-                        ref={textRefs.current[id]}
-                        onClick={() => handleTextClick(id)}
-                        sx={{
-                          position: 'absolute',
-                          cursor: 'move',
-                          color: styles.color,
-                          fontSize: `${styles.fontSize}px`,
-                          fontFamily: styles.fontFamily,
-                          fontWeight: styles.fontWeight,
-                          fontStyle: styles.fontStyle,
-                          textShadow: styles.textShadow,
-                          userSelect: 'none',
-                          whiteSpace: 'pre-wrap',
-                          maxWidth: '90%',
-                          border: activeTextId === id ? `2px dashed ${colorScheme.primary}` : '1px dashed rgba(255,255,255,0.3)',
-                          padding: '1px',
-                          opacity: activeTextId === id ? 0.9 : 0.7,
-                          transition: 'all 0.2s ease',
-                          '&:hover': { opacity: 0.9 },
-                          bgcolor: activeTextId === id ? 'rgba(0,0,0,0.1)' : 'transparent',
-                          borderRadius: '3px',
-                        }}
-                      >
-                        {text || 'Double click to edit'}
-                      </Box>
-                    </Draggable>
-                  ))}
-                </>
-              ) : (
-                <Box sx={{ textAlign: 'center', p: 1.5 }}>
-                  <CloudUploadIcon sx={{ fontSize: '40px', color: colorScheme.secondaryText, mb: 0.5 }} />
-                  <Typography variant="body2" sx={{ color: colorScheme.secondaryText, fontSize: '11px' }}>
-                    Upload an image to start
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-
-            <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-              <Button
-                variant="contained"
-                onClick={handleSave}
-                disabled={!image}
-                startIcon={<DownloadIcon />}
-                sx={{
-                  py: 0.8,
-                  px: 1.5,
-                  bgcolor: colorScheme.primary,
-                  color: colorScheme.secondary,
-                  '&:hover': { bgcolor: darkMode ? '#1a1a5e' : '#1a1a5e' },
-                  borderRadius: '5px',
-                  textTransform: 'none',
-                  fontWeight: 500,
-                  fontSize: '11px',
-                  '&:disabled': {
-                    bgcolor: darkMode ? '#3d4a54' : '#e0e0e0',
-                    color: darkMode ? '#b0b0b0' : '#9e9e9e',
-                  },
-                }}
-              >
-                Download
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={handlePublish}
-                disabled={!image || isPublishing}
-                startIcon={publishSuccess ? null : <PublishIcon />}
-                sx={{
-                  py: 0.8,
-                  px: 1.5,
-                  color: publishSuccess ? colorScheme.secondary : colorScheme.primary,
-                  borderColor: colorScheme.primary,
-                  bgcolor: publishSuccess ? colorScheme.primary : 'transparent',
-                  '&:hover': {
-                    borderColor: colorScheme.primary,
-                    bgcolor: publishSuccess ? (darkMode ? '#1a1a5e' : '#1a1a5e') : 'rgba(8, 7, 51, 0.1)',
-                  },
-                  borderRadius: '5px',
-                  textTransform: 'none',
-                  fontWeight: 500,
-                  fontSize: publishSuccess ? '9px' : '11px',
-                  minWidth: publishSuccess ? '180px' : 'auto',
-                  transition: 'all 0.3s ease',
-                  '&:disabled': {
-                    borderColor: darkMode ? '#3d4a54' : '#e0e0e0',
-                    color: darkMode ? '#b0b0b0' : '#9e9e9e',
-                  },
-                }}
-              >
-                {publishSuccess ? 'Meme published successfully!' : isPublishing ? 'Publishing...' : 'Publish'}
-              </Button>
-            </Box>
-          </Box>
-        </Box>
+              {isLogin ? 'Register' : 'Login'}
+            </Button>
+          </Typography>
+        </form>
+        <Snackbar
+          open={notification.open}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          message={notification.message}
+          sx={{
+            '& .MuiSnackbarContent-root': {
+              bgcolor: notification.type === 'success' ? '#2e7d32' : colorScheme.primary,
+              color: colorScheme.secondary,
+              fontSize: '12px',
+              borderRadius: '5px',
+              padding: '6px 12px',
+            },
+          }}
+        />
       </Paper>
-      <Snackbar
-        open={notification.open}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        message={notification.message}
-        sx={{
-          '& .MuiSnackbarContent-root': {
-            bgcolor: notification.type === 'success' ? '#2e7d32' : colorScheme.primary,
-            color: colorScheme.secondary,
-            fontSize: '12px',
-            borderRadius: '5px',
-            padding: '6px 12px',
-          },
-        }}
-      />
     </Container>
   );
 };
 
-export default Editor;
+export default Profile;
