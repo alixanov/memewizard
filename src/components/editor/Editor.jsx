@@ -337,7 +337,7 @@ const Editor = () => {
         sx={{
           p: 1.5,
           width: '100%',
-          background: 'linear-gradient(135deg,rgb(195, 203, 233) 0%,rgb(216, 230, 244) 33%, #c3cfe2 66%,rgba(22, 24, 27, 0.88) 100%)',
+          background: 'linear-gradient(135deg,rgb(195, 203, 233) 0%,rgb(216, 230, 244) 33%,rgb(190, 214, 252) 66%,rgb(161, 176, 231)  100%)',
                     borderRadius: '6px',
           boxShadow: '0 3px 10px rgba(0, 0, 0, 0.08)',
           transition: 'background-color 0.3s ease',

@@ -131,7 +131,7 @@ const Profile = () => {
 
   if (currentUser) {
     return (
-      <Container maxWidth="xs" sx={{ mt: 4, bgcolor: '#f8f9fa', minHeight: '60vh' }}>
+      <Container maxWidth="xs" sx={{ mt: 4, bgcolor: '#f8f9fa', minHeight: '50vh' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
           <Typography
             variant="h5"
@@ -214,14 +214,15 @@ const Profile = () => {
     <Container
       maxWidth="xs"
       sx={{
-        minHeight: '90vh',
+        minHeight: { xs: '50vh', sm: '70vh' }, // Коррекция высоты для мобильных устройств
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         bgcolor: '#f8f9fa',
+        overflow: 'hidden' // Отключает скролл
       }}
     >
-      <Paper elevation={0} sx={{ p: 2, bgcolor: colorScheme.background, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+      <Paper elevation={0} sx={{ p: 2, bgcolor: colorScheme.background, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',borderRadius:"11px" }}>
         <Typography
           variant="h5"
           sx={{
