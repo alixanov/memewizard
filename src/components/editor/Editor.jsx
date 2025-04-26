@@ -39,7 +39,7 @@ const Editor = () => {
   const [texts, setTexts] = useState([
     {
       id: 1,
-      text: 'Your text here',
+      text: '',
       position: { x: 50, y: 50 },
       styles: {
         fontSize: 24,
@@ -53,6 +53,8 @@ const Editor = () => {
         strokeWidth: 0,
         opacity: 1,
       },
+      textWidth: 0,
+      textHeight: 0,
     },
   ]);
   const [activeTextId, setActiveTextId] = useState(1);
@@ -100,7 +102,20 @@ const Editor = () => {
   };
 
   const handleTextChange = (id, value) => {
-    setTexts((prev) => prev.map((t) => (t.id === id ? { ...t, text: value } : t)));
+    setTexts((prev) =>
+      prev.map((t) => {
+        if (t.id === id) {
+          const updatedText = { ...t, text: value };
+          if (canvasRef.current) {
+            const { textWidth, textHeight } = calculateTextDimensions(updatedText.text, updatedText.styles, canvasRef.current);
+            updatedText.textWidth = textWidth;
+            updatedText.textHeight = textHeight;
+          }
+          return updatedText;
+        }
+        return t;
+      })
+    );
   };
 
   const handleStyleChange = (id, key, value) => {
@@ -108,9 +123,13 @@ const Editor = () => {
       prev.map((t) => {
         if (t.id === id) {
           const updatedText = { ...t, styles: { ...t.styles, [key]: value } };
-          if (key === 'textPosition' && canvasRef.current) {
-            const { position } = calculateTextPosition(updatedText.text, updatedText.styles, canvasRef.current);
+          if (canvasRef.current) {
+            const { position, textWidth, textHeight } = key === 'textPosition'
+              ? calculateTextPosition(updatedText.text, updatedText.styles, canvasRef.current)
+              : { ...calculateTextDimensions(updatedText.text, updatedText.styles, canvasRef.current), position: t.position };
             updatedText.position = position;
+            updatedText.textWidth = textWidth;
+            updatedText.textHeight = textHeight;
           }
           return updatedText;
         }
@@ -120,7 +139,20 @@ const Editor = () => {
   };
 
   const handleDrag = (id, e, data) => {
-    setTexts((prev) => prev.map((t) => (t.id === id ? { ...t, position: { x: data.x, y: data.y } } : t)));
+    setTexts((prev) =>
+      prev.map((t) => {
+        if (t.id === id) {
+          const canvasWidth = 500;
+          const canvasHeight = 500;
+          const textWidth = t.textWidth || 100; // Fallback width
+          const textHeight = t.textHeight || t.styles.fontSize * 1.2;
+          const x = Math.max(0, Math.min(data.x, canvasWidth - textWidth));
+          const y = Math.max(0, Math.min(data.y, canvasHeight - textHeight));
+          return { ...t, position: { x, y } };
+        }
+        return t;
+      })
+    );
   };
 
   const addText = () => {
@@ -141,6 +173,8 @@ const Editor = () => {
         strokeWidth: 0,
         opacity: 1,
       },
+      textWidth: 0,
+      textHeight: 0,
     };
     setTexts((prev) => [...prev, newText]);
     setActiveTextId(newId);
@@ -212,20 +246,23 @@ const Editor = () => {
     }
   };
 
-  const calculateTextPosition = (text, styles, canvas) => {
+  const calculateTextDimensions = (text, styles, canvas) => {
     const ctx = canvas.getContext('2d');
-    ctx.font = `${styles.fontStyle === 'italic' ? 'italic ' : ''}${styles.fontWeight === 'bold' ? 'bold ' : ''}${styles.fontSize
-      }px ${styles.fontFamily}`;
+    ctx.font = `${styles.fontStyle === 'italic' ? 'italic ' : ''}${styles.fontWeight === 'bold' ? 'bold ' : ''}${styles.fontSize}px ${styles.fontFamily}`;
     const lines = text.split('\n');
     const lineHeight = styles.fontSize * 1.2;
     const textWidth = Math.max(...lines.map((line) => ctx.measureText(line).width));
     const textHeight = lines.length * lineHeight;
+    return { textWidth, textHeight };
+  };
 
+  const calculateTextPosition = (text, styles, canvas) => {
+    const { textWidth, textHeight } = calculateTextDimensions(text, styles, canvas);
     let x, y;
     switch (styles.textPosition) {
       case 'start':
         x = 15;
-        y = 250; // Center vertically in 500px
+        y = 250;
         break;
       case 'end':
         x = 500 - textWidth - 15;
@@ -247,7 +284,6 @@ const Editor = () => {
         x = 250;
         y = 250;
     }
-
     return { position: { x, y }, textWidth, textHeight };
   };
 
@@ -258,24 +294,27 @@ const Editor = () => {
       const img = new Image();
       img.src = image;
       img.onload = () => {
-        const maxWidth = 500;
-        const maxHeight = 500;
-        let width = img.width;
-        let height = img.height;
-        const ratio = Math.min(maxWidth / width, maxHeight / height);
-        width = width * ratio;
-        height = height * ratio;
-
+        // Set fixed canvas size to 500x500
         canvas.width = 500;
         canvas.height = 500;
+
+        // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = darkMode ? '#1a1a1a' : '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, (500 - width) / 2, (500 - height) / 2, width, height);
+
+        // Calculate dimensions to fit image into 500x500 while maintaining aspect ratio
+        const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+        const width = img.width * scale;
+        const height = img.height * scale;
+        const x = (canvas.width - width) / 2;
+        const y = (canvas.height - height) / 2;
+
+        // Draw image centered
+        ctx.drawImage(img, x, y, width, height);
 
         texts.forEach(({ text, position, styles }) => {
-          ctx.font = `${styles.fontStyle === 'italic' ? 'italic ' : ''}${styles.fontWeight === 'bold' ? 'bold ' : ''}${styles.fontSize
-            }px ${styles.fontFamily}`;
+          ctx.font = `${styles.fontStyle === 'italic' ? 'italic ' : ''}${styles.fontWeight === 'bold' ? 'bold ' : ''}${styles.fontSize}px ${styles.fontFamily}`;
           ctx.fillStyle = styles.color;
           ctx.globalAlpha = styles.opacity;
 
@@ -548,7 +587,9 @@ const Editor = () => {
                 </Grid>
 
                 <Box sx={{ mt: 1.5, mb: 1.5 }}>
-                  <Typography variant="body2" sx={{ color: colorScheme.text, mb: 0.5, fontSize: '14px' }}>
+                  <Typography variant="body2" sx={{
+                    color: colorScheme.text, mb: 0.5, fontSize: '14px'
+                  }}>
                     Font Size: {activeText?.styles.fontSize || 24}px
                   </Typography>
                   <Slider
@@ -608,113 +649,114 @@ const Editor = () => {
                   </Button>
                   <Collapse in={expanded}>
                     <Box sx={{ mt: 1.5 }}>
-                      <Grid container spacing={1}>
-                        <Grid item xs={6}>
-                          <Box>
-                            <Typography variant="body2" sx={{ color: colorScheme.text, mb: 0.5, fontSize: '14px' }}>
-                              Text Color
-                            </Typography>
-                            <TextField
-                              type="color"
-                              value={activeText?.styles.color || '#ffffff'}
-                              onChange={(e) => handleStyleChange(activeTextId, 'color', e.target.value)}
-                              size="small"
-                              fullWidth
-                              sx={{
-                                '& .MuiOutlinedInput-root': {
-                                  height: '32px',
-                                  p: '1px !important',
-                                  bgcolor: colorScheme.background,
+                      <>
+                        <Grid container spacing={1}>
+                          <Grid item xs={6}>
+                            <Box>
+                              <Typography variant="body2" sx={{ color: colorScheme.text, mb: 0.5, fontSize: '14px' }}>
+                                Text Color
+                              </Typography>
+                              <TextField
+                                type="color"
+                                value={activeText?.styles.color || '#ffffff'}
+                                onChange={(e) => handleStyleChange(activeTextId, 'color', e.target.value)}
+                                size="small"
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    height: '32px',
+                                    p: '1px !important',
+                                    bgcolor: colorScheme.background,
+                                    borderRadius: '5px',
+                                  },
+                                  '& .MuiInputBase-input': {
+                                    p: 0,
+                                    height: '100%',
+                                    cursor: 'pointer',
+                                  },
+                                }}
+                              />
+                            </Box>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <Box>
+                              <Typography variant="body2" sx={{ color: colorScheme.text, mb: 0.5, fontSize: '14px' }}>
+                                Stroke Color
+                              </Typography>
+                              <TextField
+                                type="color"
+                                value={activeText?.styles.strokeColor || '#000000'}
+                                onChange={(e) => handleStyleChange(activeTextId, 'strokeColor', e.target.value)}
+                                size="small"
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    height: '32px',
+                                    p: '1px !important',
+                                    bgcolor: colorScheme.background,
+                                    borderRadius: '5px',
+                                  },
+                                  '& .MuiInputBase-input': {
+                                    p: 0,
+                                    height: '100%',
+                                    cursor: 'pointer',
+                                  },
+                                }}
+                              />
+                            </Box>
+                          </Grid>
+                        </Grid>
+                        <Grid container spacing={1} sx={{ mt: 1 }}>
+                          <Grid item xs={6}>
+                            <FormControl fullWidth size="small">
+                              <InputLabel sx={{ color: colorScheme.secondaryText, fontSize: '16px' }}>
+                                Stroke Width
+                              </InputLabel>
+                              <Select
+                                value={activeText?.styles.strokeWidth || 0}
+                                onChange={(e) => handleStyleChange(activeTextId, 'strokeWidth', e.target.value)}
+                                label="Stroke Width"
+                                sx={{
+                                  color: colorScheme.text,
+                                  fontSize: '14px',
+                                  '& .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.border },
+                                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
+                                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
                                   borderRadius: '5px',
-                                },
-                                '& .MuiInputBase-input': {
-                                  p: 0,
-                                  height: '100%',
-                                  cursor: 'pointer',
-                                },
-                              }}
-                            />
-                          </Box>
-                        </Grid>
-                        <Grid item xs={6}>
-                          <Box>
-                            <Typography variant="body2" sx={{ color: colorScheme.text, mb: 0.5, fontSize: '14px' }}>
-                              Stroke Color
-                            </Typography>
-                            <TextField
-                              type="color"
-                              value={activeText?.styles.strokeColor || '#000000'}
-                              onChange={(e) => handleStyleChange(activeTextId, 'strokeColor', e.target.value)}
-                              size="small"
-                              fullWidth
-                              sx={{
-                                '& .MuiOutlinedInput-root': {
-                                  height: '32px',
-                                  p: '1px !important',
-                                  bgcolor: colorScheme.background,
+                                }}
+                              >
+                                <MenuItem value={0}>None</MenuItem>
+                                <MenuItem value={1}>1px</MenuItem>
+                                <MenuItem value={2}>2px</MenuItem>
+                                <MenuItem value={3}>3px</MenuItem>
+                              </Select>
+                            </FormControl>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <FormControl fullWidth size="small">
+                              <InputLabel sx={{ color: colorScheme.secondaryText, fontSize: '16px' }}>Shadow</InputLabel>
+                              <Select
+                                value={activeText?.styles.textShadow || '2px 2px 4px #000000'}
+                                onChange={(e) => handleStyleChange(activeTextId, 'textShadow', e.target.value)}
+                                label="Shadow"
+                                sx={{
+                                  color: colorScheme.text,
+                                  fontSize: '14px',
+                                  '& .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.border },
+                                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
+                                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
                                   borderRadius: '5px',
-                                },
-                                '& .MuiInputBase-input': {
-                                  p: 0,
-                                  height: '100%',
-                                  cursor: 'pointer',
-                                },
-                              }}
-                            />
-                          </Box>
+                                }}
+                              >
+                                <MenuItem value="none">None</MenuItem>
+                                <MenuItem value="2px 2px 4px #000000">Black</MenuItem>
+                                <MenuItem value="2px 2px 4px #ffffff">White</MenuItem>
+                                <MenuItem value="0 0 8px #ff00ff">Neon</MenuItem>
+                              </Select>
+                            </FormControl>
+                          </Grid>
                         </Grid>
-                      </Grid>
-
-                      <Grid container spacing={1} sx={{ mt: 1 }}>
-                        <Grid item xs={6}>
-                          <FormControl fullWidth size="small">
-                            <InputLabel sx={{ color: colorScheme.secondaryText, fontSize: '16px' }}>
-                              Stroke Width
-                            </InputLabel>
-                            <Select
-                              value={activeText?.styles.strokeWidth || 0}
-                              onChange={(e) => handleStyleChange(activeTextId, 'strokeWidth', e.target.value)}
-                              label="Stroke Width"
-                              sx={{
-                                color: colorScheme.text,
-                                fontSize: '14px',
-                                '& .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.border },
-                                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
-                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
-                                borderRadius: '5px',
-                              }}
-                            >
-                              <MenuItem value={0}>None</MenuItem>
-                              <MenuItem value={1}>1px</MenuItem>
-                              <MenuItem value={2}>2px</MenuItem>
-                              <MenuItem value={3}>3px</MenuItem>
-                            </Select>
-                          </FormControl>
-                        </Grid>
-                        <Grid item xs={6}>
-                          <FormControl fullWidth size="small">
-                            <InputLabel sx={{ color: colorScheme.secondaryText, fontSize: '16px' }}>Shadow</InputLabel>
-                            <Select
-                              value={activeText?.styles.textShadow || '2px 2px 4px #000000'}
-                              onChange={(e) => handleStyleChange(activeTextId, 'textShadow', e.target.value)}
-                              label="Shadow"
-                              sx={{
-                                color: colorScheme.text,
-                                fontSize: '14px',
-                                '& .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.border },
-                                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
-                                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
-                                borderRadius: '5px',
-                              }}
-                            >
-                              <MenuItem value="none">None</MenuItem>
-                              <MenuItem value="2px 2px 4px #000000">Black</MenuItem>
-                              <MenuItem value="2px 2px 4px #ffffff">White</MenuItem>
-                              <MenuItem value="0 0 8px #ff00ff">Neon</MenuItem>
-                            </Select>
-                          </FormControl>
-                        </Grid>
-                      </Grid>
+                      </>
                     </Box>
                   </Collapse>
                 </Box>
@@ -759,12 +801,17 @@ const Editor = () => {
                       height: '500px',
                     }}
                   />
-                  {texts.map(({ id, text, position, styles }) => (
+                  {texts.map(({ id, text, position, styles, textWidth, textHeight }) => (
                     <Draggable
                       key={id}
                       position={position}
                       onDrag={(e, data) => handleDrag(id, e, data)}
-                      bounds="parent"
+                      bounds={{
+                        left: 0,
+                        top: 0,
+                        right: 500 - (textWidth || 100),
+                        bottom: 500 - (textHeight || styles.fontSize * 1.2),
+                      }}
                       nodeRef={textRefs.current[id] || (textRefs.current[id] = React.createRef())}
                     >
                       <Box
@@ -781,7 +828,7 @@ const Editor = () => {
                           textShadow: styles.textShadow,
                           userSelect: 'none',
                           whiteSpace: 'pre-wrap',
-                          maxWidth: '90%',
+                          width: 'fit-content',
                           border: activeTextId === id ? `2px dashed ${colorScheme.primary}` : '1px dashed rgba(255,255,255,0.3)',
                           padding: '2px',
                           opacity: activeTextId === id ? 0.9 : 0.7,
@@ -789,9 +836,15 @@ const Editor = () => {
                           '&:hover': { opacity: 0.9 },
                           bgcolor: activeTextId === id ? 'rgba(0,0,0,0.1)' : 'transparent',
                           borderRadius: '3px',
+                          textAlign:
+                            styles.textPosition === 'center' || styles.textPosition === 'top' || styles.textPosition === 'bottom'
+                              ? 'center'
+                              : styles.textPosition === 'start'
+                                ? 'left'
+                                : 'right',
                         }}
                       >
-                        {text || 'Double click to edit'}
+                        {text || ''}
                       </Box>
                     </Draggable>
                   ))}
