@@ -127,7 +127,7 @@ const Editor = () => {
     const newId = texts.length > 0 ? Math.max(...texts.map((t) => t.id)) + 1 : 1;
     const newText = {
       id: newId,
-      text: 'New text',
+      text: `New text ${newId}`,
       position: { x: 50, y: 50 },
       styles: {
         fontSize: 24,
@@ -157,78 +157,7 @@ const Editor = () => {
     setActiveTextId(id);
   };
 
-  const renderCanvasWithText = () => {
-    const canvas = canvasRef.current;
-    if (!canvas || !image) return;
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    img.src = image;
-    return new Promise((resolve) => {
-      img.onload = () => {
-        const maxWidth = 350;
-        const maxHeight = 200;
-        let width = img.width;
-        let height = img.height;
-        if (width > maxWidth || height > maxHeight) {
-          const ratio = Math.min(maxWidth / width, maxHeight / height);
-          width = width * ratio;
-          height = height * ratio;
-        }
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(img, 0, 0, width, height);
-
-        texts.forEach(({ text, position, styles }) => {
-          ctx.font = `${styles.fontStyle === 'italic' ? 'italic ' : ''}${styles.fontWeight === 'bold' ? 'bold ' : ''}${styles.fontSize
-            }px ${styles.fontFamily}`;
-          ctx.fillStyle = styles.color;
-          ctx.globalAlpha = styles.opacity;
-
-          ctx.textAlign =
-            styles.textPosition === 'center' || styles.textPosition === 'top' || styles.textPosition === 'bottom'
-              ? 'center'
-              : styles.textPosition === 'start'
-                ? 'left'
-                : 'right';
-
-          if (styles.textShadow !== 'none') {
-            const [offsetX, offsetY, blur, color] = styles.textShadow.split(' ');
-            ctx.shadowOffsetX = parseFloat(offsetX);
-            ctx.shadowOffsetY = parseFloat(offsetY);
-            ctx.shadowBlur = parseFloat(blur);
-            ctx.shadowColor = color;
-          } else {
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
-            ctx.shadowBlur = 0;
-            ctx.shadowColor = 'transparent';
-          }
-
-          if (styles.strokeWidth > 0) {
-            ctx.strokeStyle = styles.strokeColor;
-            ctx.lineWidth = styles.strokeWidth;
-            const lines = text.split('\n');
-            const lineHeight = styles.fontSize * 1.2;
-            lines.forEach((line, index) => {
-              ctx.strokeText(line, position.x, position.y + index * lineHeight);
-            });
-          }
-
-          const lines = text.split('\n');
-          const lineHeight = styles.fontSize * 1.2;
-          lines.forEach((line, index) => {
-            ctx.fillText(line, position.x, position.y + index * lineHeight);
-          });
-
-          ctx.globalAlpha = 1;
-        });
-        resolve();
-      };
-    });
-  };
-
-  const handleSave = async () => {
-    await renderCanvasWithText();
+  const handleSave = () => {
     const canvas = canvasRef.current;
     const link = document.createElement('a');
     link.download = 'meme.png';
@@ -245,7 +174,6 @@ const Editor = () => {
     }
 
     setIsPublishing(true);
-    await renderCanvasWithText();
     const canvas = canvasRef.current;
     const imageData = canvas.toDataURL('image/png');
 
@@ -296,28 +224,28 @@ const Editor = () => {
     let x, y;
     switch (styles.textPosition) {
       case 'start':
-        x = 5;
-        y = canvas.height / 2;
+        x = 15;
+        y = 250; // Center vertically in 500px
         break;
       case 'end':
-        x = canvas.width - textWidth - 5;
-        y = canvas.height / 2;
+        x = 500 - textWidth - 15;
+        y = 250;
         break;
       case 'top':
-        x = canvas.width / 2;
-        y = styles.fontSize + 5;
+        x = 250;
+        y = styles.fontSize + 15;
         break;
       case 'bottom':
-        x = canvas.width / 2;
-        y = canvas.height - textHeight - 5;
+        x = 250;
+        y = 500 - textHeight - 15;
         break;
       case 'center':
-        x = canvas.width / 2;
-        y = canvas.height / 2;
+        x = 250;
+        y = 250;
         break;
       default:
-        x = canvas.width / 2;
-        y = canvas.height / 2;
+        x = 250;
+        y = 250;
     }
 
     return { position: { x, y }, textWidth, textHeight };
@@ -330,70 +258,117 @@ const Editor = () => {
       const img = new Image();
       img.src = image;
       img.onload = () => {
-        const maxWidth = 350;
-        const maxHeight = 200;
+        const maxWidth = 500;
+        const maxHeight = 500;
         let width = img.width;
         let height = img.height;
-        if (width > maxWidth || height > maxHeight) {
-          const ratio = Math.min(maxWidth / width, maxHeight / height);
-          width = width * ratio;
-          height = height * ratio;
-        }
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(img, 0, 0, width, height);
+        const ratio = Math.min(maxWidth / width, maxHeight / height);
+        width = width * ratio;
+        height = height * ratio;
+
+        canvas.width = 500;
+        canvas.height = 500;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = darkMode ? '#1a1a1a' : '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, (500 - width) / 2, (500 - height) / 2, width, height);
+
+        texts.forEach(({ text, position, styles }) => {
+          ctx.font = `${styles.fontStyle === 'italic' ? 'italic ' : ''}${styles.fontWeight === 'bold' ? 'bold ' : ''}${styles.fontSize
+            }px ${styles.fontFamily}`;
+          ctx.fillStyle = styles.color;
+          ctx.globalAlpha = styles.opacity;
+
+          ctx.textAlign =
+            styles.textPosition === 'center' || styles.textPosition === 'top' || styles.textPosition === 'bottom'
+              ? 'center'
+              : styles.textPosition === 'start'
+                ? 'left'
+                : 'right';
+
+          if (styles.textShadow !== 'none') {
+            const [offsetX, offsetY, blur, color] = styles.textShadow.split(' ');
+            ctx.shadowOffsetX = parseFloat(offsetX);
+            ctx.shadowOffsetY = parseFloat(offsetY);
+            ctx.shadowBlur = parseFloat(blur);
+            ctx.shadowColor = color;
+          } else {
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+          }
+
+          if (styles.strokeWidth > 0) {
+            ctx.strokeStyle = styles.strokeColor;
+            ctx.lineWidth = styles.strokeWidth;
+            const lines = text.split('\n');
+            const lineHeight = styles.fontSize * 1.2;
+            lines.forEach((line, index) => {
+              ctx.strokeText(line, position.x, position.y + index * lineHeight);
+            });
+          }
+
+          const lines = text.split('\n');
+          const lineHeight = styles.fontSize * 1.2;
+          lines.forEach((line, index) => {
+            ctx.fillText(line, position.x, position.y + index * lineHeight);
+          });
+
+          ctx.globalAlpha = 1;
+        });
       };
     }
-  }, [image]);
+  }, [image, texts, darkMode]);
 
   const activeText = texts.find((t) => t.id === activeTextId) || texts[0];
 
   return (
     <Container
       sx={{
-        py: 1.5,
-        minHeight: 'auto',
-        transition: 'background-color 0.3s ease',
+        py: 2,
+        minHeight: '100vh',
         display: 'flex',
-        marginTop: '50px',
-        minHeight: '80vh',
+        flexDirection: 'column',
+        marginTop: '20px',
+        bgcolor: colorScheme.background,
+        transition: 'background-color 0.3s ease',
       }}
     >
       <Paper
         elevation={2}
         sx={{
-          p: 1.5,
+          p: 2,
+          flex: 1,
           width: '100%',
-          background:
-            'linear-gradient(135deg, #e6e8f0 0%, #f0f2f8 33%,rgba(208, 220, 255, 0.66) 66%,rgb(199, 207, 241) 100%)',
+          background: 'linear-gradient(135deg, #e6e8f0 0%, #f0f2f8 33%, rgba(208, 220, 255, 0.66) 66%, rgb(199, 207, 241) 100%)',
           borderRadius: '6px',
           boxShadow: '0 3px 10px rgba(0, 0, 0, 0.05)',
           transition: 'background-color 0.3s ease',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
           <Typography
             variant="h5"
             sx={{
               color: colorScheme.primary,
               fontWeight: 700,
-              fontSize: { xs: '18px', sm: '22px' },
+              fontSize: { xs: '20px', sm: '24px' },
             }}
           >
             Meme Creator
           </Typography>
         </Box>
 
-        <Divider sx={{ borderColor: colorScheme.border, mb: 1.5 }} />
+        <Divider sx={{ borderColor: colorScheme.border, mb: 2 }} />
 
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 1.5 }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, flex: 1 }}>
           {/* Left panel - Controls */}
-          <Box sx={{ width: { xs: '100%', md: '250px' } }}>
-            <Box sx={{ mb: 1.5 }}>
-              <Typography
-                variant="subtitle2"
-                sx={{ color: colorScheme.text, mb: 0.5, fontWeight: 600, fontSize: '11px' }}
-              >
+          <Box sx={{ width: { xs: '100%', md: '300px' }, minWidth: { md: '300px' } }}>
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: colorScheme.text, mb: 0.75, fontWeight: 600, fontSize: '16px' }}>
                 Image
               </Typography>
               <Button
@@ -402,14 +377,14 @@ const Editor = () => {
                 startIcon={<CloudUploadIcon />}
                 fullWidth
                 sx={{
-                  py: 0.8,
+                  py: 1,
                   bgcolor: colorScheme.primary,
                   color: colorScheme.secondary,
                   '&:hover': { bgcolor: darkMode ? '#1a1a5e' : '#1a1a5e' },
                   borderRadius: '5px',
                   textTransform: 'none',
                   fontWeight: 500,
-                  fontSize: '11px',
+                  fontSize: '14px',
                 }}
               >
                 Upload Image
@@ -417,12 +392,9 @@ const Editor = () => {
               </Button>
             </Box>
 
-            <Box sx={{ mb: 1.5 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                <Typography
-                  variant="subtitle2"
-                  sx={{ color: colorScheme.text, fontWeight: 600, fontSize: '11px' }}
-                >
+            <Box sx={{ mb: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.75 }}>
+                <Typography variant="subtitle2" sx={{ color: colorScheme.text, fontWeight: 600, fontSize: '16px' }}>
                   Text Elements
                 </Typography>
                 <Button
@@ -436,7 +408,7 @@ const Editor = () => {
                     '&:hover': { borderColor: colorScheme.primary, bgcolor: 'rgba(8, 7, 51, 0.1)' },
                     borderRadius: '5px',
                     textTransform: 'none',
-                    fontSize: '11px',
+                    fontSize: '14px',
                   }}
                 >
                   Add
@@ -444,15 +416,15 @@ const Editor = () => {
               </Box>
 
               {texts.length > 0 && (
-                <Box sx={{ maxHeight: '120px', overflowY: 'auto', mb: 0.5 }}>
+                <Box sx={{ maxHeight: 'auto', overflowY: 'visible', mb: 0.75 }}>
                   {texts.map((text) => (
                     <Paper
                       key={text.id}
                       elevation={0}
                       onClick={() => handleTextClick(text.id)}
                       sx={{
-                        p: 0.8,
-                        mb: 0.3,
+                        p: 1,
+                        mb: 0.5,
                         bgcolor: activeTextId === text.id ? (darkMode ? '#3d4a54' : '#e6e8fa') : darkMode ? '#2d3436' : '#f8f9fa',
                         borderRadius: '5px',
                         border: `1px solid ${activeTextId === text.id ? colorScheme.primary : colorScheme.border}`,
@@ -470,7 +442,7 @@ const Editor = () => {
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
-                            fontSize: '11px',
+                            fontSize: '14px',
                           }}
                         >
                           {text.text || 'Empty text'}
@@ -494,10 +466,7 @@ const Editor = () => {
 
             {activeText && (
               <Box>
-                <Typography
-                  variant="subtitle2"
-                  sx={{ color: colorScheme.text, mb: 0.5, fontWeight: 600, fontSize: '11px' }}
-                >
+                <Typography variant="subtitle2" sx={{ color: colorScheme.text, mb: 0.75, fontWeight: 600, fontSize: '16px' }}>
                   Text Settings
                 </Typography>
 
@@ -508,18 +477,18 @@ const Editor = () => {
                   onChange={(e) => handleTextChange(activeTextId, e.target.value)}
                   size="small"
                   sx={{
-                    mb: 1,
+                    mb: 1.5,
                     '& .MuiOutlinedInput-root': {
                       '& fieldset': { borderColor: colorScheme.border },
                       '&:hover fieldset': { borderColor: colorScheme.primary },
                       '&.Mui-focused fieldset': { borderColor: colorScheme.primary },
                       borderRadius: '5px',
-                      fontSize: '11px',
+                      fontSize: '14px',
                     },
-                    '& .MuiInputBase-input': { color: colorScheme.text, fontSize: '11px', padding: '5px 8px' },
+                    '& .MuiInputBase-input': { color: colorScheme.text, fontSize: '14px', padding: '8px 12px' },
                     '& .MuiInputLabel-root': {
                       color: colorScheme.secondaryText,
-                      fontSize: '12px',
+                      fontSize: '16px',
                     },
                     '& .MuiInputLabel-root.Mui-focused': {
                       color: colorScheme.primary,
@@ -527,17 +496,17 @@ const Editor = () => {
                   }}
                 />
 
-                <Grid container spacing={0.5}>
+                <Grid container spacing={1}>
                   <Grid item xs={6}>
                     <FormControl fullWidth size="small">
-                      <InputLabel sx={{ color: colorScheme.secondaryText, fontSize: '12px' }}>Font</InputLabel>
+                      <InputLabel sx={{ color: colorScheme.secondaryText, fontSize: '16px' }}>Font</InputLabel>
                       <Select
                         value={activeText?.styles.fontFamily || 'Impact'}
                         onChange={(e) => handleStyleChange(activeTextId, 'fontFamily', e.target.value)}
                         label="Font"
                         sx={{
                           color: colorScheme.text,
-                          fontSize: '11px',
+                          fontSize: '14px',
                           '& .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.border },
                           '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
                           '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
@@ -547,21 +516,21 @@ const Editor = () => {
                         <MenuItem value="Impact">Impact</MenuItem>
                         <MenuItem value="Arial">Arial</MenuItem>
                         <MenuItem value="Roboto">Roboto</MenuItem>
-                        <MenuItem value="Comic Sans MS">Comic Sans</MenuItem>
+                        <MenuItem value="Comic Sans MS">Comic Sans MS</MenuItem>
                         <MenuItem value="Times New Roman">Times New Roman</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
                   <Grid item xs={6}>
                     <FormControl fullWidth size="small">
-                      <InputLabel sx={{ color: colorScheme.secondaryText, fontSize: '12px' }}>Position</InputLabel>
+                      <InputLabel sx={{ color: colorScheme.secondaryText, fontSize: '16px' }}>Position</InputLabel>
                       <Select
                         value={activeText?.styles.textPosition || 'center'}
                         onChange={(e) => handleStyleChange(activeTextId, 'textPosition', e.target.value)}
                         label="Position"
                         sx={{
                           color: colorScheme.text,
-                          fontSize: '11px',
+                          fontSize: '14px',
                           '& .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.border },
                           '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
                           '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
@@ -578,8 +547,8 @@ const Editor = () => {
                   </Grid>
                 </Grid>
 
-                <Box sx={{ mt: 1, mb: 1 }}>
-                  <Typography variant="body2" sx={{ color: colorScheme.text, mb: 0.3, fontSize: '11px' }}>
+                <Box sx={{ mt: 1.5, mb: 1.5 }}>
+                  <Typography variant="body2" sx={{ color: colorScheme.text, mb: 0.5, fontSize: '14px' }}>
                     Font Size: {activeText?.styles.fontSize || 24}px
                   </Typography>
                   <Slider
@@ -590,20 +559,20 @@ const Editor = () => {
                     step={2}
                     sx={{
                       color: colorScheme.primary,
-                      height: 3,
+                      height: 4,
                       '& .MuiSlider-thumb': {
-                        width: 10,
-                        height: 10,
+                        width: 12,
+                        height: 12,
                         '&:hover, &.Mui-focusVisible': {
-                          boxShadow: `0px 0px 0px 5px ${darkMode ? 'rgba(8, 7, 51, 0.16)' : 'rgba(8, 7, 51, 0.16)'}`,
+                          boxShadow: `0px 0px 0px 6px ${darkMode ? 'rgba(8, 7, 51, 0.16)' : 'rgba(8, 7, 51, 0.16)'}`,
                         },
                       },
                     }}
                   />
                 </Box>
 
-                <Box sx={{ mb: 1 }}>
-                  <Typography variant="body2" sx={{ color: colorScheme.text, mb: 0.3, fontSize: '11px' }}>
+                <Box sx={{ mb: 1.5 }}>
+                  <Typography variant="body2" sx={{ color: colorScheme.text, mb: 0.5, fontSize: '14px' }}>
                     Opacity: {Math.round((activeText?.styles.opacity || 1) * 100)}%
                   </Typography>
                   <Slider
@@ -614,13 +583,13 @@ const Editor = () => {
                     step={0.1}
                     sx={{
                       color: colorScheme.primary,
-                      height: 3,
-                      '& .MuiSlider-thumb': { width: 10, height: 10 },
+                      height: 4,
+                      '& .MuiSlider-thumb': { width: 12, height: 12 },
                     }}
                   />
                 </Box>
 
-                <Box sx={{ mb: 1 }}>
+                <Box sx={{ mb: 1.5 }}>
                   <Button
                     onClick={() => setExpanded(!expanded)}
                     fullWidth
@@ -628,21 +597,21 @@ const Editor = () => {
                       color: colorScheme.primary,
                       justifyContent: 'space-between',
                       textTransform: 'none',
-                      fontSize: '11px',
+                      fontSize: '14px',
                       bgcolor: darkMode ? '#3d4a54' : '#e6e8fa',
                       borderRadius: '5px',
-                      p: 0.8,
+                      p: 1,
                     }}
                     endIcon={<ExpandMoreIcon sx={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />}
                   >
                     Advanced Settings
                   </Button>
                   <Collapse in={expanded}>
-                    <Box sx={{ mt: 1 }}>
-                      <Grid container spacing={0.5}>
+                    <Box sx={{ mt: 1.5 }}>
+                      <Grid container spacing={1}>
                         <Grid item xs={6}>
                           <Box>
-                            <Typography variant="body2" sx={{ color: colorScheme.text, mb: 0.3, fontSize: '11px' }}>
+                            <Typography variant="body2" sx={{ color: colorScheme.text, mb: 0.5, fontSize: '14px' }}>
                               Text Color
                             </Typography>
                             <TextField
@@ -653,7 +622,7 @@ const Editor = () => {
                               fullWidth
                               sx={{
                                 '& .MuiOutlinedInput-root': {
-                                  height: '28px',
+                                  height: '32px',
                                   p: '1px !important',
                                   bgcolor: colorScheme.background,
                                   borderRadius: '5px',
@@ -669,7 +638,7 @@ const Editor = () => {
                         </Grid>
                         <Grid item xs={6}>
                           <Box>
-                            <Typography variant="body2" sx={{ color: colorScheme.text, mb: 0.3, fontSize: '11px' }}>
+                            <Typography variant="body2" sx={{ color: colorScheme.text, mb: 0.5, fontSize: '14px' }}>
                               Stroke Color
                             </Typography>
                             <TextField
@@ -680,7 +649,7 @@ const Editor = () => {
                               fullWidth
                               sx={{
                                 '& .MuiOutlinedInput-root': {
-                                  height: '28px',
+                                  height: '32px',
                                   p: '1px !important',
                                   bgcolor: colorScheme.background,
                                   borderRadius: '5px',
@@ -696,10 +665,10 @@ const Editor = () => {
                         </Grid>
                       </Grid>
 
-                      <Grid container spacing={0.5} sx={{ mt: 0.5 }}>
+                      <Grid container spacing={1} sx={{ mt: 1 }}>
                         <Grid item xs={6}>
                           <FormControl fullWidth size="small">
-                            <InputLabel sx={{ color: colorScheme.secondaryText, fontSize: '12px' }}>
+                            <InputLabel sx={{ color: colorScheme.secondaryText, fontSize: '16px' }}>
                               Stroke Width
                             </InputLabel>
                             <Select
@@ -708,7 +677,7 @@ const Editor = () => {
                               label="Stroke Width"
                               sx={{
                                 color: colorScheme.text,
-                                fontSize: '11px',
+                                fontSize: '14px',
                                 '& .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.border },
                                 '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
                                 '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
@@ -724,14 +693,14 @@ const Editor = () => {
                         </Grid>
                         <Grid item xs={6}>
                           <FormControl fullWidth size="small">
-                            <InputLabel sx={{ color: colorScheme.secondaryText, fontSize: '12px' }}>Shadow</InputLabel>
+                            <InputLabel sx={{ color: colorScheme.secondaryText, fontSize: '16px' }}>Shadow</InputLabel>
                             <Select
                               value={activeText?.styles.textShadow || '2px 2px 4px #000000'}
                               onChange={(e) => handleStyleChange(activeTextId, 'textShadow', e.target.value)}
                               label="Shadow"
                               sx={{
                                 color: colorScheme.text,
-                                fontSize: '11px',
+                                fontSize: '14px',
                                 '& .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.border },
                                 '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
                                 '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: colorScheme.primary },
@@ -754,20 +723,30 @@ const Editor = () => {
           </Box>
 
           {/* Right panel - Canvas */}
-          <Box sx={{ flex: 1 }}>
+          <Box
+            sx={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              overflow: 'auto',
+            }}
+          >
             <Box
               sx={{
                 position: 'relative',
                 border: `1px solid ${colorScheme.border}`,
                 borderRadius: '5px',
                 overflow: 'hidden',
-                minHeight: '150px',
-                maxHeight: '200px',
+                width: { xs: '100%', md: '500px' },
+                maxWidth: '500px',
+                height: '500px',
                 bgcolor: darkMode ? '#1a1a1a' : '#e0e0e0',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                mb: 1.5,
+                mb: 2,
               }}
             >
               {image ? (
@@ -776,9 +755,8 @@ const Editor = () => {
                     ref={canvasRef}
                     style={{
                       display: 'block',
-                      maxWidth: '100%',
-                      maxHeight: '200px',
-                      objectFit: 'contain',
+                      width: '500px',
+                      height: '500px',
                     }}
                   />
                   {texts.map(({ id, text, position, styles }) => (
@@ -806,54 +784,44 @@ const Editor = () => {
                           maxWidth: '90%',
                           border: activeTextId === id ? `2px dashed ${colorScheme.primary}` : '1px dashed rgba(255,255,255,0.3)',
                           padding: '2px',
-                          opacity: styles.opacity,
+                          opacity: activeTextId === id ? 0.9 : 0.7,
                           transition: 'all 0.2s ease',
                           '&:hover': { opacity: 0.9 },
                           bgcolor: activeTextId === id ? 'rgba(0,0,0,0.1)' : 'transparent',
                           borderRadius: '3px',
-                          textAlign:
-                            styles.textPosition === 'center' ||
-                              styles.textPosition === 'top' ||
-                              styles.textPosition === 'bottom'
-                              ? 'center'
-                              : styles.textPosition === 'start'
-                                ? 'left'
-                                : 'right',
-                          lineHeight: 1.2,
-                          WebkitTextStroke: styles.strokeWidth > 0 ? `${styles.strokeWidth}px ${styles.strokeColor}` : 'none',
                         }}
                       >
-                        {text || 'Enter text'}
+                        {text || 'Double click to edit'}
                       </Box>
                     </Draggable>
                   ))}
                 </>
               ) : (
-                <Box sx={{ textAlign: 'center', p: 1.5 }}>
-                  <CloudUploadIcon sx={{ fontSize: '40px', color: colorScheme.secondaryText, mb: 0.5 }} />
-                  <Typography variant="body2" sx={{ color: colorScheme.secondaryText, fontSize: '11px' }}>
+                <Box sx={{ textAlign: 'center', p: 2 }}>
+                  <CloudUploadIcon sx={{ fontSize: '48px', color: colorScheme.secondaryText, mb: 0.75 }} />
+                  <Typography variant="body2" sx={{ color: colorScheme.secondaryText, fontSize: '14px' }}>
                     Upload an image to start
                   </Typography>
                 </Box>
               )}
             </Box>
 
-            <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
               <Button
                 variant="contained"
                 onClick={handleSave}
                 disabled={!image}
                 startIcon={<DownloadIcon />}
                 sx={{
-                  py: 0.8,
-                  px: 1.5,
+                  py: 1,
+                  px: 2,
                   bgcolor: colorScheme.primary,
                   color: colorScheme.secondary,
                   '&:hover': { bgcolor: darkMode ? '#1a1a5e' : '#1a1a5e' },
                   borderRadius: '5px',
                   textTransform: 'none',
                   fontWeight: 500,
-                  fontSize: '11px',
+                  fontSize: '14px',
                   '&:disabled': {
                     bgcolor: darkMode ? '#3d4a54' : '#e0e0e0',
                     color: darkMode ? '#b0b0b0' : '#9e9e9e',
@@ -868,8 +836,8 @@ const Editor = () => {
                 disabled={!image || isPublishing}
                 startIcon={publishSuccess ? null : <PublishIcon />}
                 sx={{
-                  py: 0.8,
-                  px: 1.5,
+                  py: 1,
+                  px: 2,
                   color: publishSuccess ? colorScheme.secondary : colorScheme.primary,
                   borderColor: colorScheme.primary,
                   bgcolor: publishSuccess ? colorScheme.primary : 'transparent',
@@ -880,8 +848,8 @@ const Editor = () => {
                   borderRadius: '5px',
                   textTransform: 'none',
                   fontWeight: 500,
-                  fontSize: publishSuccess ? '9px' : '11px',
-                  minWidth: publishSuccess ? '180px' : 'auto',
+                  fontSize: publishSuccess ? '12px' : '14px',
+                  minWidth: publishSuccess ? '200px' : 'auto',
                   transition: 'all 0.3s ease',
                   '&:disabled': {
                     borderColor: darkMode ? '#3d4a54' : '#e0e0e0',
@@ -903,9 +871,9 @@ const Editor = () => {
           '& .MuiSnackbarContent-root': {
             bgcolor: notification.type === 'success' ? '#2e7d32' : colorScheme.primary,
             color: colorScheme.secondary,
-            fontSize: '12px',
+            fontSize: '14px',
             borderRadius: '5px',
-            padding: '6px 12px',
+            padding: '8px 16px',
           },
         }}
       />
