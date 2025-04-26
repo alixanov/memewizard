@@ -315,8 +315,8 @@ const Editor = () => {
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        marginTop: '20px',
-        bgcolor: colorScheme.background,
+        // marginTop: '20px',
+        // bgcolor: colorScheme.background,
         transition: 'background-color 0.3s ease',
       }}
     >
