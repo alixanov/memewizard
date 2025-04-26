@@ -59,7 +59,7 @@ const Editor = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishSuccess, setPublishSuccess] = useState(false);
-  const [expanded, setExpanded] = useState(false); // Added missing state
+  const [expanded, setExpanded] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: '', type: 'error' });
   const canvasRef = useRef(null);
   const textRefs = useRef({});
@@ -157,7 +157,78 @@ const Editor = () => {
     setActiveTextId(id);
   };
 
-  const handleSave = () => {
+  const renderCanvasWithText = () => {
+    const canvas = canvasRef.current;
+    if (!canvas || !image) return;
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.src = image;
+    return new Promise((resolve) => {
+      img.onload = () => {
+        const maxWidth = 350;
+        const maxHeight = 200;
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width = width * ratio;
+          height = height * ratio;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+
+        texts.forEach(({ text, position, styles }) => {
+          ctx.font = `${styles.fontStyle === 'italic' ? 'italic ' : ''}${styles.fontWeight === 'bold' ? 'bold ' : ''}${styles.fontSize
+            }px ${styles.fontFamily}`;
+          ctx.fillStyle = styles.color;
+          ctx.globalAlpha = styles.opacity;
+
+          ctx.textAlign =
+            styles.textPosition === 'center' || styles.textPosition === 'top' || styles.textPosition === 'bottom'
+              ? 'center'
+              : styles.textPosition === 'start'
+                ? 'left'
+                : 'right';
+
+          if (styles.textShadow !== 'none') {
+            const [offsetX, offsetY, blur, color] = styles.textShadow.split(' ');
+            ctx.shadowOffsetX = parseFloat(offsetX);
+            ctx.shadowOffsetY = parseFloat(offsetY);
+            ctx.shadowBlur = parseFloat(blur);
+            ctx.shadowColor = color;
+          } else {
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+          }
+
+          if (styles.strokeWidth > 0) {
+            ctx.strokeStyle = styles.strokeColor;
+            ctx.lineWidth = styles.strokeWidth;
+            const lines = text.split('\n');
+            const lineHeight = styles.fontSize * 1.2;
+            lines.forEach((line, index) => {
+              ctx.strokeText(line, position.x, position.y + index * lineHeight);
+            });
+          }
+
+          const lines = text.split('\n');
+          const lineHeight = styles.fontSize * 1.2;
+          lines.forEach((line, index) => {
+            ctx.fillText(line, position.x, position.y + index * lineHeight);
+          });
+
+          ctx.globalAlpha = 1;
+        });
+        resolve();
+      };
+    });
+  };
+
+  const handleSave = async () => {
+    await renderCanvasWithText();
     const canvas = canvasRef.current;
     const link = document.createElement('a');
     link.download = 'meme.png';
@@ -174,6 +245,7 @@ const Editor = () => {
     }
 
     setIsPublishing(true);
+    await renderCanvasWithText();
     const canvas = canvasRef.current;
     const imageData = canvas.toDataURL('image/png');
 
@@ -270,68 +342,21 @@ const Editor = () => {
         canvas.width = width;
         canvas.height = height;
         ctx.drawImage(img, 0, 0, width, height);
-
-        texts.forEach(({ text, position, styles }) => {
-          ctx.font = `${styles.fontStyle === 'italic' ? 'italic ' : ''}${styles.fontWeight === 'bold' ? 'bold ' : ''}${styles.fontSize
-            }px ${styles.fontFamily}`;
-          ctx.fillStyle = styles.color;
-          ctx.globalAlpha = styles.opacity;
-
-          ctx.textAlign =
-            styles.textPosition === 'center' || styles.textPosition === 'top' || styles.textPosition === 'bottom'
-              ? 'center'
-              : styles.textPosition === 'start'
-                ? 'left'
-                : 'right';
-
-          if (styles.textShadow !== 'none') {
-            const [offsetX, offsetY, blur, color] = styles.textShadow.split(' ');
-            ctx.shadowOffsetX = parseFloat(offsetX);
-            ctx.shadowOffsetY = parseFloat(offsetY);
-            ctx.shadowBlur = parseFloat(blur);
-            ctx.shadowColor = color;
-          } else {
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
-            ctx.shadowBlur = 0;
-            ctx.shadowColor = 'transparent';
-          }
-
-          if (styles.strokeWidth > 0) {
-            ctx.strokeStyle = styles.strokeColor;
-            ctx.lineWidth = styles.strokeWidth;
-            const lines = text.split('\n');
-            const lineHeight = styles.fontSize * 1.2;
-            lines.forEach((line, index) => {
-              ctx.strokeText(line, position.x, position.y + index * lineHeight);
-            });
-          }
-
-          const lines = text.split('\n');
-          const lineHeight = styles.fontSize * 1.2;
-          lines.forEach((line, index) => {
-            ctx.fillText(line, position.x, position.y + index * lineHeight);
-          });
-
-          ctx.globalAlpha = 1;
-        });
       };
     }
-  }, [image, texts]);
+  }, [image]);
 
   const activeText = texts.find((t) => t.id === activeTextId) || texts[0];
 
   return (
     <Container
-      // maxWidth="md"
       sx={{
         py: 1.5,
         minHeight: 'auto',
         transition: 'background-color 0.3s ease',
         display: 'flex',
         marginTop: '50px',
-        minHeight: '80vh', // Увеличивает высоту элемента
-
+        minHeight: '80vh',
       }}
     >
       <Paper
@@ -339,16 +364,13 @@ const Editor = () => {
         sx={{
           p: 1.5,
           width: '100%',
-          background: 'linear-gradient(135deg, #e6e8f0 0%, #f0f2f8 33%,rgba(208, 220, 255, 0.66) 66%,rgb(199, 207, 241) 100%)',
+          background:
+            'linear-gradient(135deg, #e6e8f0 0%, #f0f2f8 33%,rgba(208, 220, 255, 0.66) 66%,rgb(199, 207, 241) 100%)',
           borderRadius: '6px',
           boxShadow: '0 3px 10px rgba(0, 0, 0, 0.05)',
           transition: 'background-color 0.3s ease',
         }}
       >
-
-
-
-
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
           <Typography
             variant="h5"
@@ -368,7 +390,10 @@ const Editor = () => {
           {/* Left panel - Controls */}
           <Box sx={{ width: { xs: '100%', md: '250px' } }}>
             <Box sx={{ mb: 1.5 }}>
-              <Typography variant="subtitle2" sx={{ color: colorScheme.text, mb: 0.5, fontWeight: 600, fontSize: '11px' }}>
+              <Typography
+                variant="subtitle2"
+                sx={{ color: colorScheme.text, mb: 0.5, fontWeight: 600, fontSize: '11px' }}
+              >
                 Image
               </Typography>
               <Button
@@ -394,7 +419,10 @@ const Editor = () => {
 
             <Box sx={{ mb: 1.5 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                <Typography variant="subtitle2" sx={{ color: colorScheme.text, fontWeight: 600, fontSize: '11px' }}>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ color: colorScheme.text, fontWeight: 600, fontSize: '11px' }}
+                >
                   Text Elements
                 </Typography>
                 <Button
@@ -466,7 +494,10 @@ const Editor = () => {
 
             {activeText && (
               <Box>
-                <Typography variant="subtitle2" sx={{ color: colorScheme.text, mb: 0.5, fontWeight: 600, fontSize: '11px' }}>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ color: colorScheme.text, mb: 0.5, fontWeight: 600, fontSize: '11px' }}
+                >
                   Text Settings
                 </Typography>
 
@@ -774,15 +805,25 @@ const Editor = () => {
                           whiteSpace: 'pre-wrap',
                           maxWidth: '90%',
                           border: activeTextId === id ? `2px dashed ${colorScheme.primary}` : '1px dashed rgba(255,255,255,0.3)',
-                          padding: '1px',
-                          opacity: activeTextId === id ? 0.9 : 0.7,
+                          padding: '2px',
+                          opacity: styles.opacity,
                           transition: 'all 0.2s ease',
                           '&:hover': { opacity: 0.9 },
                           bgcolor: activeTextId === id ? 'rgba(0,0,0,0.1)' : 'transparent',
                           borderRadius: '3px',
+                          textAlign:
+                            styles.textPosition === 'center' ||
+                              styles.textPosition === 'top' ||
+                              styles.textPosition === 'bottom'
+                              ? 'center'
+                              : styles.textPosition === 'start'
+                                ? 'left'
+                                : 'right',
+                          lineHeight: 1.2,
+                          WebkitTextStroke: styles.strokeWidth > 0 ? `${styles.strokeWidth}px ${styles.strokeColor}` : 'none',
                         }}
                       >
-                        {text || 'Double click to edit'}
+                        {text || 'Enter text'}
                       </Box>
                     </Draggable>
                   ))}
