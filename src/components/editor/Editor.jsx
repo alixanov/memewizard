@@ -345,7 +345,7 @@ const Editor = () => {
           >
             Meme Creator
           </Typography>
-          <FormControlLabel
+          {/* <FormControlLabel
             control={
               <Switch
                 checked={darkMode}
@@ -358,7 +358,7 @@ const Editor = () => {
             }
             label="Dark Mode"
             sx={{ color: colorScheme.text, fontSize: '14px' }}
-          />
+          /> */}
         </Box>
 
         <Divider sx={{ borderColor: colorScheme.border, mb: 2 }} />
