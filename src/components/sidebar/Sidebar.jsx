@@ -3,11 +3,11 @@ import { NavLink } from 'react-router-dom';
 import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest';
 import HomeIcon from '@mui/icons-material/Home';
 import EditIcon from '@mui/icons-material/Edit';
-import ImageIcon from '@mui/icons-material/Image';
 import AutoAwesomeMotionIcon from '@mui/icons-material/AutoAwesomeMotion';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import GroupsIcon from '@mui/icons-material/Groups';
-
+import LinkIcon from '@mui/icons-material/Link';
+import XIcon from '@mui/icons-material/X';
 
 const Sidebar = () => {
   const [isMobile, setIsMobile] = useState(window.matchMedia('(max-width: 768px)').matches);
@@ -29,7 +29,7 @@ const Sidebar = () => {
       alignItems: 'center',
       width: '100%',
       padding: '10px 20px',
-      backgroundColor: '#e6e8f0', // Updated background color
+      backgroundColor: '#e6e8f0',
       boxShadow: '0 -2px 4px rgba(0, 0, 0, 0.1)',
       position: 'fixed',
       bottom: 0,
@@ -42,7 +42,7 @@ const Sidebar = () => {
       width: '250px',
       height: '100vh',
       padding: '20px',
-      backgroundColor: '#e6e8f0', // Updated background color
+      backgroundColor: '#e6e8f0',
       boxShadow: '2px 0 4px rgba(0, 0, 0, 0.1)',
       position: 'fixed',
       top: 0,
@@ -81,6 +81,7 @@ const Sidebar = () => {
       display: 'flex',
       flexDirection: 'column',
       gap: '15px',
+      flex: 1,
     };
 
   const linkStyle = isMobile
@@ -107,12 +108,12 @@ const Sidebar = () => {
   const activeLinkStyle = isMobile
     ? {
       ...linkStyle,
-      backgroundColor: '#ffffff', // More minimal active color
+      backgroundColor: '#ffffff',
     }
     : {
       ...linkStyle,
       color: '#080733',
-      backgroundColor: '#ffffff', // More minimal active color
+      backgroundColor: '#ffffff',
     };
 
   const hoverLinkStyle = isMobile
@@ -135,7 +136,9 @@ const Sidebar = () => {
     { name: 'Editor', icon: <EditIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/editor' },
     { name: 'All Meme', icon: <AutoAwesomeMotionIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/all-memes' },
     {
-      name: 'All Streams', icon: <GroupsIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />, to: '/all-streams'
+      name: 'All Streams',
+      icon: <GroupsIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />,
+      to: '/all-streams',
     },
   ];
 
@@ -160,6 +163,17 @@ const Sidebar = () => {
           </li>
         ))}
       </ul>
+      <a
+        href="https://x.com/memewizzard_sol"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={hoveredLink === 'follow-us' ? hoverLinkStyle : linkStyle}
+        onMouseEnter={() => !isMobile && setHoveredLink('follow-us')}
+        onMouseLeave={() => !isMobile && setHoveredLink(null)}
+      >
+        <XIcon style={{ color: '#080733', fontSize: isMobile ? '20px' : '24px' }} />
+        {!isMobile && <span>Follow Us</span>}
+      </a>
     </nav>
   );
 };
