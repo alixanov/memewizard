@@ -7,7 +7,7 @@ const AppRoutes = () => {
     <div className="app-container">
       <Sidebar />
       <main className="main-content">
-        <Routes>
+        <Routes basename='/'  >
           <Route path="/" element={<Home />} />
           {/* <Route path="/editor" element={<MemeEditor />} /> */}
           <Route path="/gallery" element={<MemeGallery />} />
