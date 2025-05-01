@@ -31,16 +31,17 @@ body {
 
 .main-content {
   flex: 1;
-  /* padding: 20px; */
-  margin-left: 250px;
-  /* Учитываем ширину Sidebar в десктопе */
+  margin-right: 250px;
+  padding-top: 60px;
+  /* Accounts for Navbar height */
 }
 
 @media (max-width: 768px) {
   .main-content {
-    margin-left: 0;
-    /* Убираем отступ в мобильном режиме */
+    margin-right: 0;
     padding-bottom: 70px;
-    /* Учитываем высоту Footer */
+    /* Accounts for Sidebar height */
+    padding-top: 60px;
+    /* Accounts for Navbar height */
   }
 }
